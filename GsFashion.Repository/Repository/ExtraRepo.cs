@@ -14,7 +14,7 @@ namespace GsFashion.Repository.Repository
 {
     public class ExtraRepo : IExtraRepo
     {
-        private const string _extraSp = "extra";
+        private const string _extraSp = "usp_manage_categories";
         public static IDbConnection _context;
         public ExtraRepo(DapperContext context)
         {
