@@ -5,14 +5,15 @@ namespace GsFashion.MVC.Controllers
 {
     public class ExtraController : Controller
     {
-        private readonly IExtraService extraService;
+        private readonly IExtraService _extraService;
         public ExtraController(IExtraService extraService)
         {
-            extraService = extraService;
+            _extraService = extraService;
         }
         public async Task<IActionResult> GetDoctorAppointment()
         {
-            return View(await extraService.GetAppointment());
+            var data = await _extraService.GetAppointment();
+            return View(data);
         }
     }
 }
