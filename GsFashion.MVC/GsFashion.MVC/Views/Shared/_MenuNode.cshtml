@@ -1,0 +1,26 @@
+@model GsFashion.Repository.Models.MenuTreeModel
+
+<li class="nav-item">
+    @if (Model.Children.Any())
+    {
+        var collapseId = $"submenu-{Model.MenuId}";
+        <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#@collapseId" role="button">
+            <span><i class="@Model.IconClass"></i> @Model.MenuName</span>
+            <i class="bi bi-chevron-down small"></i>
+        </a>
+        <div class="collapse" id="@collapseId">
+            <ul class="nav flex-column ms-3">
+                @foreach (var child in Model.Children)
+                {
+                    @await Html.PartialAsync("_MenuNode", child)
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <a class="nav-link" href="@Model.MenuUrl">
+            <i class="@Model.IconClass"></i> @Model.MenuName
+        </a>
+    }
+</li>

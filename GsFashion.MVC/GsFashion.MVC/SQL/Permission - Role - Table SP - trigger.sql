@@ -472,17 +472,3 @@ END
 GO
 
 
--- =====================================================
--- EXAMPLE CALLS
--- =====================================================
--- EXEC usp_manage_roles @type = 'Insert', @role_name = 'Admin', @description = 'Full access';
--- EXEC usp_manage_roles @type = 'Insert', @role_name = 'Staff', @description = 'Front desk staff';
---
--- EXEC usp_manage_menus @type = 'Insert', @menu_name = 'Dashboard', @menu_url = '/dashboard', @display_order = 1;
--- EXEC usp_manage_menus @type = 'Insert', @menu_name = 'Rentals', @menu_url = '/rentals', @display_order = 2;
--- EXEC usp_manage_menus @type = 'Insert', @menu_name = 'Rental Items', @parent_menu_id = 2, @menu_url = '/rentals/items', @display_order = 1;
---
--- EXEC usp_manage_role_menu_permissions @type = 'Insert', @role_id = 1, @menu_id = 1, @can_view = 1, @can_add = 1, @can_edit = 1, @can_delete = 1;
--- EXEC usp_manage_role_menu_permissions @type = 'Insert', @role_id = 2, @menu_id = 1, @can_view = 1, @can_add = 0, @can_edit = 0, @can_delete = 0;
---
--- EXEC usp_get_menus_by_role @role_id = 2;   -- returns the menu tree Staff should see

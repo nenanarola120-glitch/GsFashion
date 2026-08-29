@@ -2,19 +2,11 @@
 {
     public enum SPEnum
     {
-        None = 0,
         GetAll,
+        DropDown,
         GetById,
         Insert,
         Update,
-        Delete,
-        Login,
-        GetUserRoleWise,
-        GetRoleByUserId,
-        UpdateAppointmentStatus,
-        GetPatientsByDoctorId,
-        GetByName,
-        GetAppointmentByUserId,
-        GetBillByUserId
+        Delete
     }
 }
