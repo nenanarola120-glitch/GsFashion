@@ -1,0 +1,11 @@
+@model GsFashion.MVC.Models.RoleMenuPermissionFormViewModel
+@{
+    ViewData["Title"] = "Edit Permission";
+    Layout = "_Layout";
+}
+
+<h4 class="mb-3">Edit Role Menu Permission</h4>
+
+<form asp-action="Edit" asp-route-id="@Model.PermissionId" method="post" style="max-width: 700px;">
+    @await Html.PartialAsync("_Form", Model)
+</form>

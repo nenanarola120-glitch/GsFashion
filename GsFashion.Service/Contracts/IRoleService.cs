@@ -1,4 +1,5 @@
 ﻿using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
 using GsFashion.Repository.Models.Menu;
 
 namespace GsFashion.Service.Contracts
@@ -8,8 +9,8 @@ namespace GsFashion.Service.Contracts
         Task<IEnumerable<RoleModel>> GetAllAsync();
         Task<RoleModel?> GetByIdAsync(int roleId);
         Task<IEnumerable<DropDownResponse>> GetRoleDropDown();
-        Task<int> InsertAsync(RoleModel role);
-        Task UpdateAsync(RoleModel role);
-        Task DeleteAsync(int roleId);
+        Task<Response> InsertAsync(RoleModel role);
+        Task<Response> UpdateAsync(RoleModel role);
+        Task<Response> DeleteAsync(int roleId);
     }
 }

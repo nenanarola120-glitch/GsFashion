@@ -1,5 +1,6 @@
 ﻿using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
 using GsFashion.Repository.Models.Menu;
 using GsFashion.Service.Contracts;
 using System;
@@ -32,20 +33,25 @@ namespace GsFashion.Service.Services
         {
             return await _roleRepository.GetRoleDropDown();
         }
-
-        public async Task<int> InsertAsync(RoleModel role)
+        #region Insert
+        public async Task<Response> InsertAsync(RoleModel role)
         {
             return await _roleRepository.InsertAsync(role);
         }
+        #endregion
 
-        public async Task UpdateAsync(RoleModel role)
+        #region Update
+        public async Task<Response> UpdateAsync(RoleModel role)
         {
-            await _roleRepository.UpdateAsync(role);
+            return await _roleRepository.UpdateAsync(role);
         }
+        #endregion
 
-        public async Task DeleteAsync(int roleId)
+        #region Delete
+        public async Task<Response> DeleteAsync(int roleId)
         {
-            await _roleRepository.DeleteAsync(roleId);
+            return await _roleRepository.DeleteAsync(roleId);
         }
+        #endregion
     }
 }

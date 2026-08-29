@@ -94,14 +94,17 @@ namespace GsFashion.MVC.Controllers
             var result = await _authService.RegisterAsync(
                 model.Username, model.Password, model.FullName, model.Email, model.RoleId);
 
-            if (!result.Success)
+            if (result.Status == 0)
             {
-                model.ErrorMessage = result.ErrorMessage;
+                TempData["Error"] = result.Message;
                 model.Roles = (await _roleService.GetRoleDropDown()).ToList();
                 return View(model);
             }
+            else
+            {
+                TempData["Success"] = "Account created. You can log in now.";
+            }
 
-            TempData["RegisterSuccess"] = "Account created. You can log in now.";
             return RedirectToAction("Login");
         }
 
@@ -110,6 +113,7 @@ namespace GsFashion.MVC.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["Success"] = "Log out suucessfully.";
             return RedirectToAction("Login");
         }
 

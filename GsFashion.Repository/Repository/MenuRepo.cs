@@ -3,6 +3,8 @@ using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Dapper;
 using GsFashion.Repository.Enums;
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
+using GsFashion.Repository.Models.Menu;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -44,6 +46,18 @@ namespace GsFashion.Repository.Repository
         }
         #endregion
 
+        #region Get All dropdown list
+        public async Task<IEnumerable<DropDownResponse>> GetMenuDropDown()
+        {
+            var result = await _context.QueryAsync<DropDownResponse>(
+                _menuSp,
+                new { Type = SPEnum.DropDown.ToString() },
+                commandType: CommandType.StoredProcedure);
+
+            return result;
+        }
+        #endregion
+
         #region Get By Id
         public async Task<MenuModel?> GetByIdAsync(int menuId)
         {
@@ -57,9 +71,9 @@ namespace GsFashion.Repository.Repository
         #endregion
 
         #region Insert
-        public async Task<int> InsertAsync(MenuModel menu)
+        public async Task<Response> InsertAsync(MenuModel menu)
         {
-            var result = await _context.ExecuteScalarAsync<int>(
+            var result = await _context.QueryFirstAsync<Response>(
                 _menuSp,
                 new
                 {
@@ -78,9 +92,9 @@ namespace GsFashion.Repository.Repository
         #endregion
 
         #region Update
-        public async Task UpdateAsync(MenuModel menu)
+        public async Task<Response> UpdateAsync(MenuModel menu)
         {
-            await _context.ExecuteAsync(
+            var result = await _context.QueryFirstAsync<Response>(
                 _menuSp,
                 new
                 {
@@ -94,16 +108,24 @@ namespace GsFashion.Repository.Repository
                     is_active = menu.IsActive
                 },
                 commandType: CommandType.StoredProcedure);
+
+            return result;
         }
         #endregion
 
         #region Delete
-        public async Task DeleteAsync(int menuId)
+        public async Task<Response> DeleteAsync(int menuId)
         {
-            await _context.ExecuteAsync(
+            var result = await _context.QueryFirstAsync<Response>(
                 _menuSp,
-                new { Type = SPEnum.Delete.ToString(), menu_id = menuId },
+                new
+                {
+                    Type = SPEnum.Delete.ToString(),
+                    menu_id = menuId
+                },
                 commandType: CommandType.StoredProcedure);
+
+            return result;
         }
         #endregion
     }

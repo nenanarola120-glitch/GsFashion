@@ -1,5 +1,7 @@
 using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
+using GsFashion.Repository.Models.Menu;
 using GsFashion.Service.Contracts;
 
 namespace GsFashion.Service.Implementation
@@ -12,7 +14,50 @@ namespace GsFashion.Service.Implementation
         {
             _menuRepository = menuRepository;
         }
+        #region Get All
+        public async Task<IEnumerable<MenuModel>> GetAllAsync()
+        {
+            return await _menuRepository.GetAllAsync();
+        }
+        #endregion
 
+        #region Get By Id
+        public async Task<MenuModel?> GetByIdAsync(int menuId)
+        {
+            return await _menuRepository.GetByIdAsync(menuId);
+        }
+        #endregion
+        public async Task<IEnumerable<DropDownResponse>> GetMenuDropDown()
+        {
+            return await _menuRepository.GetMenuDropDown();
+        }
+
+        #region Insert
+        public async Task<Response> InsertAsync(MenuModel menu)
+        {
+            var result = await _menuRepository.InsertAsync(menu);
+
+            return result;
+        }
+        #endregion
+
+        #region Update
+        public async Task<Response> UpdateAsync(MenuModel menu)
+        {
+            var result = await _menuRepository.UpdateAsync(menu);
+
+            return result;
+        }
+        #endregion
+
+        #region Delete
+        public async Task<Response> DeleteAsync(int menuId)
+        {
+            var result = await _menuRepository.DeleteAsync(menuId);
+
+            return result;
+        }
+        #endregion
         public async Task<List<MenuTreeModel>> GetMenuTreeForRoleAsync(int roleId)
         {
             var flatMenus = (await _menuRepository.GetMenusByRoleAsync(roleId)).ToList();
