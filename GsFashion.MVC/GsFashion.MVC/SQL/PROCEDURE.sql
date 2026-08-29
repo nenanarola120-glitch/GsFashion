@@ -349,13 +349,4 @@ END
 GO
 
 
--- =====================================================
--- EXAMPLE CALLS
--- =====================================================
--- EXEC usp_manage_customers @type = 'GetAll';
--- EXEC usp_manage_customers @type = 'GetById', @customer_id = 1;
--- EXEC usp_manage_customers @type = 'Insert', @first_name='Raj', @last_name='Patel',
---      @phone_number='9998887777', @email='raj@example.com', @address='Surat';
--- EXEC usp_manage_customers @type = 'Update', @customer_id=1, @first_name='Rajesh',
---      @last_name='Patel', @phone_number='9998887777', @email='raj@example.com', @address='Surat';
--- EXEC usp_manage_customers @type = 'Delete', @customer_id = 1;
+

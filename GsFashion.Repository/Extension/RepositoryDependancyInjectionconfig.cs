@@ -10,9 +10,10 @@ namespace GsFashion.Repository.Extension
         {
             //services.AddScoped<IUserRepository, UserRepository>();
             //services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-            //services.AddScoped<IAuthRepository, AuthRepository>();
-            //services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IExtraRepo, ExtraRepo>();
+            services.AddTransient<IAdminUserRepository, AdminUserRepo>();
+            services.AddTransient<IMenuRepository, MenuRepo>();
+            services.AddTransient<IRoleRepository, RoleRepo>();
+ 
 
             return services;
         }
