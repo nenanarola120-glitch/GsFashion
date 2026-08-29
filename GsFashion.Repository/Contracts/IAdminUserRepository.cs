@@ -1,4 +1,5 @@
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
 
 namespace GsFashion.Repository.Contracts
 {
@@ -7,8 +8,8 @@ namespace GsFashion.Repository.Contracts
         Task<AdminUserModel?> GetByUsernameAsync(string username);
         Task<AdminUserModel?> GetByIdAsync(int userId);
         Task<IEnumerable<AdminUserModel>> GetAllAsync();
-        Task<int> InsertAsync(AdminUserModel user);
-        Task UpdateAsync(AdminUserModel user);
-        Task DeleteAsync(int userId);
+        Task<Response> InsertAsync(AdminUserModel user);
+        Task<Response> UpdateAsync(AdminUserModel user);
+        Task<Response> DeleteAsync(int userId);
     }
 }

@@ -1,0 +1,221 @@
+﻿@model GsFashion.Repository.Models.MenuModel
+
+@{
+    ViewData["Title"] = "Add Menu";
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h3 class="mb-0">
+            Add Menu
+        </h3>
+
+        <a asp-controller="Menu"
+           asp-action="GetAllAsync"
+           class="btn btn-secondary">
+
+            <i class="fa fa-arrow-left"></i>
+            Back
+
+        </a>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="card-header">
+            <strong>Menu Details</strong>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-controller="Menu"
+                  asp-action="AddMenu"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+
+                <!-- Menu Name -->
+
+                <div class="mb-3">
+
+                    <label asp-for="MenuName"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="MenuName"
+                           class="form-control"
+                           placeholder="Enter menu name" />
+
+                    <span asp-validation-for="MenuName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Parent Menu -->
+
+                <div class="mb-3">
+
+                    <label asp-for="ParentMenuId"
+                           class="form-label">
+
+                        Parent Menu
+
+                    </label>
+
+                    <select asp-for="ParentMenuId"
+                            class="form-select">
+
+                        <option value="">
+                            -- Main Menu --
+                        </option>
+
+                        @if (ViewBag.ParentMenus != null)
+                        {
+                            foreach (var parent in ViewBag.ParentMenus)
+                            {
+                                <option value="@parent.MenuId">
+                                    @parent.MenuName
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="ParentMenuId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Menu URL -->
+
+                <div class="mb-3">
+
+                    <label asp-for="MenuUrl"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="MenuUrl"
+                           class="form-control"
+                           placeholder="/Customer/Index" />
+
+                    <span asp-validation-for="MenuUrl"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Icon -->
+
+                <div class="mb-3">
+
+                    <label asp-for="IconClass"
+                           class="form-label">
+
+                        Icon Class
+
+                    </label>
+
+                    <input asp-for="IconClass"
+                           class="form-control"
+                           placeholder="fa fa-users" />
+
+                    <span asp-validation-for="IconClass"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Display Order -->
+
+                <div class="mb-3">
+
+                    <label asp-for="DisplayOrder"
+                           class="form-label">
+
+                        Display Order
+
+                    </label>
+
+                    <input asp-for="DisplayOrder"
+                           type="number"
+                           class="form-control"
+                           min="0" />
+
+                    <span asp-validation-for="DisplayOrder"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Active -->
+
+                <div class="form-check mb-3">
+
+                    <input asp-for="IsActive"
+                           class="form-check-input" />
+
+                    <label asp-for="IsActive"
+                           class="form-check-label">
+
+                        Active
+
+                    </label>
+
+                </div>
+
+
+                <!-- Buttons -->
+
+                <div class="mt-4">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="fa fa-save"></i>
+                        Save
+
+                    </button>
+
+                    <a asp-controller="Menu"
+                       asp-action="GetAllAsync"
+                       class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

@@ -13,7 +13,14 @@ namespace GsFashion.Repository.Extension
             services.AddTransient<IAdminUserRepository, AdminUserRepo>();
             services.AddTransient<IMenuRepository, MenuRepo>();
             services.AddTransient<IRoleRepository, RoleRepo>();
- 
+            services.AddTransient<IRoleMenuPermissionRepository, RoleMenuPermissionRepo>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+
 
             return services;
         }

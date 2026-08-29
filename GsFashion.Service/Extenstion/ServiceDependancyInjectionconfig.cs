@@ -11,6 +11,18 @@ namespace GsFashion.Service.Extenstion
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IMenuService, MenuService>();
             services.AddTransient<IRoleService, RoleService>();
+            services.AddTransient<IRoleMenuPermissionService,RoleMenuPermissionService>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
+            //services.AddTransient<,>();
 
             return services;
         }

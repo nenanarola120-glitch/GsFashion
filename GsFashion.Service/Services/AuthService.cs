@@ -1,6 +1,7 @@
 using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Extension;
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
 using GsFashion.Service.Contracts;
 
 namespace GsFashion.Service.Implementation
@@ -27,11 +28,18 @@ namespace GsFashion.Service.Implementation
             return user;
         }
 
-        public async Task<RegisterResult> RegisterAsync(string username, string password, string? fullName, string? email, int roleId)
+        public async Task<Response> RegisterAsync(string username,string password,string? fullName,string? email,int roleId)
         {
             var existing = await _adminUserRepository.GetByUsernameAsync(username);
+
             if (existing is not null)
-                return RegisterResult.Fail("That username is already taken.");
+            {
+                return new Response
+                {
+                    Status = 0,
+                    Message = "That username is already taken."
+                };
+            }
 
             var newUser = new AdminUserModel
             {
@@ -43,9 +51,9 @@ namespace GsFashion.Service.Implementation
                 IsActive = true
             };
 
-            await _adminUserRepository.InsertAsync(newUser);
+            var result = await _adminUserRepository.InsertAsync(newUser);
 
-            return RegisterResult.Ok();
+            return result;
         }
     }
 }

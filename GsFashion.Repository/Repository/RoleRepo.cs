@@ -3,6 +3,7 @@ using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Dapper;
 using GsFashion.Repository.Enums;
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
 using GsFashion.Repository.Models.Menu;
 using System.Collections.Generic;
 using System.Data;
@@ -32,7 +33,6 @@ namespace GsFashion.Repository.Repository
         }
         #endregion
 
-
         #region Get All dropdown list
         public async Task<IEnumerable<DropDownResponse>> GetRoleDropDown()
         {
@@ -58,9 +58,9 @@ namespace GsFashion.Repository.Repository
         #endregion
 
         #region Insert
-        public async Task<int> InsertAsync(RoleModel role)
+        public async Task<Response> InsertAsync(RoleModel role)
         {
-            var result = await _context.ExecuteScalarAsync<int>(
+            var result = await _context.QueryFirstAsync<Response>(
                 _roleSp,
                 new
                 {
@@ -76,9 +76,9 @@ namespace GsFashion.Repository.Repository
         #endregion
 
         #region Update
-        public async Task UpdateAsync(RoleModel role)
+        public async Task<Response> UpdateAsync(RoleModel role)
         {
-            await _context.ExecuteAsync(
+            var result = await _context.QueryFirstAsync<Response>(
                 _roleSp,
                 new
                 {
@@ -89,16 +89,24 @@ namespace GsFashion.Repository.Repository
                     is_active = role.IsActive
                 },
                 commandType: CommandType.StoredProcedure);
+
+            return result;
         }
         #endregion
 
         #region Delete
-        public async Task DeleteAsync(int roleId)
+        public async Task<Response> DeleteAsync(int roleId)
         {
-            await _context.ExecuteAsync(
+            var result = await _context.QueryFirstAsync<Response>(
                 _roleSp,
-                new { Type = SPEnum.Delete.ToString(), role_id = roleId },
+                new
+                {
+                    Type = SPEnum.Delete.ToString(),
+                    role_id = roleId
+                },
                 commandType: CommandType.StoredProcedure);
+
+            return result;
         }
         #endregion
     }

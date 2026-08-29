@@ -1,0 +1,58 @@
+@model GsFashion.MVC.Models.RoleMenuPermissionFormViewModel
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger py-2">@Model.ErrorMessage</div>
+}
+
+<input type="hidden" asp-for="PermissionId" />
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="RoleId" class="form-label"></label>
+        <select asp-for="RoleId" class="form-select">
+            <option value="">-- Select role --</option>
+            @foreach (var role in Model.Roles)
+            {
+                <option value="@role.Id">@role.Name</option>
+            }
+        </select>
+        <span asp-validation-for="RoleId" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="MenuId" class="form-label"></label>
+        <select asp-for="MenuId" class="form-select">
+            <option value="">-- Select menu --</option>
+            @foreach (var role in Model.Menus)
+            {
+                <option value="@role.Id">@role.Name</option>
+            }
+        </select>
+        <span asp-validation-for="MenuId" class="text-danger small"></span>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3 form-check ms-3">
+        <input asp-for="CanView" class="form-check-input" />
+        <label asp-for="CanView" class="form-check-label"></label>
+    </div>
+    <div class="col-md-3 form-check">
+        <input asp-for="CanAdd" class="form-check-input" />
+        <label asp-for="CanAdd" class="form-check-label"></label>
+    </div>
+    <div class="col-md-3 form-check">
+        <input asp-for="CanEdit" class="form-check-input" />
+        <label asp-for="CanEdit" class="form-check-label"></label>
+    </div>
+    <div class="col-md-3 form-check">
+        <input asp-for="CanDelete" class="form-check-input" />
+        <label asp-for="CanDelete" class="form-check-label"></label>
+    </div>
+</div>
+
+<div class="d-flex gap-2">
+    <button type="submit" class="btn btn-dark">Save</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</div>

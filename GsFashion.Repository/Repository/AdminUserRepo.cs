@@ -3,6 +3,7 @@ using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Dapper;
 using GsFashion.Repository.Enums;
 using GsFashion.Repository.Models;
+using GsFashion.Repository.Models.Common;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -69,9 +70,9 @@ namespace GsFashion.Repository.Repository
         #endregion
 
         #region Insert
-        public async Task<int> InsertAsync(AdminUserModel user)
+        public async Task<Response> InsertAsync(AdminUserModel user)
         {
-            var result = await _context.ExecuteScalarAsync<int>(
+            var result = await _context.QueryFirstAsync<Response>(
                 _adminUserSp,
                 new
                 {
@@ -90,9 +91,9 @@ namespace GsFashion.Repository.Repository
         #endregion
 
         #region Update
-        public async Task UpdateAsync(AdminUserModel user)
+        public async Task<Response> UpdateAsync(AdminUserModel user)
         {
-            await _context.ExecuteAsync(
+            var result = await _context.QueryFirstAsync<Response>(
                 _adminUserSp,
                 new
                 {
@@ -105,16 +106,24 @@ namespace GsFashion.Repository.Repository
                     is_active = user.IsActive
                 },
                 commandType: CommandType.StoredProcedure);
+
+            return result;
         }
         #endregion
 
         #region Delete
-        public async Task DeleteAsync(int userId)
+        public async Task<Response> DeleteAsync(int userId)
         {
-            await _context.ExecuteAsync(
+            var result = await _context.QueryFirstAsync<Response>(
                 _adminUserSp,
-                new { Type = SPEnum.Delete.ToString(), user_id = userId },
+                new
+                {
+                    Type = SPEnum.Delete.ToString(),
+                    user_id = userId
+                },
                 commandType: CommandType.StoredProcedure);
+
+            return result;
         }
         #endregion
     }
