@@ -1,6 +1,8 @@
 using GsFashion.MVC.Models;
+using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Models;
 using GsFashion.Repository.Models.Common;
+using GsFashion.Repository.Models.Menu;
 using GsFashion.Service.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
@@ -14,14 +16,15 @@ namespace GsFashion.MVC.Controllers
         private readonly IRoleMenuPermissionService _permissionService;
         private readonly IRoleService _roleService;
         private readonly IMenuService _menuService;
-
+        private readonly IAdminUserService _adminUserService;
         public RoleMenuPermissionController(
             IRoleMenuPermissionService permissionService,
             IRoleService roleService,
-            IMenuService menuService)
+            IMenuService menuService, IAdminUserService adminUserService)
         {
             _permissionService = permissionService;
             _roleService = roleService;
+            _adminUserService = adminUserService;
             _menuService = menuService;
         }
 
@@ -162,6 +165,55 @@ namespace GsFashion.MVC.Controllers
             model.Menus = (await _menuService.GetMenuDropDown()).ToList();
         }
 
-        
+        [HttpGet]
+        public async Task<IActionResult> Matrix(int? userId)
+        {
+            var model = new PermissionMatrixPageViewModel
+            {
+                SelectedUserId = userId,
+                Users = (await _adminUserService.GetUserDropDown()).ToList()
+            };
+
+            if (userId.HasValue)
+            {
+                var user = await _adminUserService.GetByIdAsync(userId.Value);
+                if (user is null)
+                    return NotFound();
+
+                model.Username = user.Username;
+                model.RoleId = user.RoleId;
+                model.RoleName = user.RoleName;
+                model.Rows = await _permissionService.GetPermissionMatrixAsync(user.RoleId);
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyMatrix(int userId, List<PermissionMatrixRow> rows)
+        {
+            var user = await _adminUserService.GetByIdAsync(userId);
+            if (user is null)
+                return NotFound();
+
+            var result = await _permissionService.ApplyPermissionMatrixAsync(user.RoleId, rows ?? new List<PermissionMatrixRow>());
+
+            if (result.Status == 0)
+                TempData["Error"] = result.Message;
+            else
+                TempData["Success"] = result.Message;
+
+            return RedirectToAction(nameof(Matrix), new { userId });
+        }
+
+        //private async Task<List<DropDownResponse>> GetUserSelectListAsync()
+        //{
+        //    var users = await _adminUserRepository.GetAllAsync();
+        //    return users
+        //        .Where(u => u.IsActive)
+        //        .Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Value = u.UserId.ToString(), Text = u.Username })
+        //        .ToList();
+        //}
     }
 }

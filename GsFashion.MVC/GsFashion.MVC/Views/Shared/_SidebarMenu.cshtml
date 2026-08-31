@@ -1,0 +1,58 @@
+﻿@model IEnumerable<GsFashion.Repository.Models.MenuTreeModel>
+
+<ul class="sidebar-menu">
+
+    @foreach (var menu in Model)
+    {
+        <li class="sidebar-item">
+
+            @if (menu.Children != null && menu.Children.Any())
+            {
+                <div class="sidebar-parent"
+                     onclick="toggleSubMenu(this)">
+
+                    <span>
+                        @if (!string.IsNullOrEmpty(menu.IconClass))
+                        {
+                            <i class="@menu.IconClass"></i>
+                        }
+
+                        @menu.MenuName
+                    </span>
+
+                    <span class="menu-arrow">
+                        ▾
+                    </span>
+
+                </div>
+
+                <ul class="sidebar-submenu">
+
+                    @await Html.PartialAsync(
+                                "_SidebarMenu",
+                        menu.Children
+                        )
+
+        </ul>
+                }
+            else
+            {
+                <a href="@menu.MenuUrl"
+                   class="sidebar-link">
+
+                    @if (!string.IsNullOrEmpty(menu.IconClass))
+                    {
+                        <i class="@menu.IconClass"></i>
+                    }
+
+                    <span>
+                        @menu.MenuName
+                    </span>
+
+                </a>
+            }
+
+        </li>
+    }
+
+</ul>

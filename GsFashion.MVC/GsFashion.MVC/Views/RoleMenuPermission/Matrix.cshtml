@@ -1,0 +1,138 @@
+@model GsFashion.MVC.Models.PermissionMatrixPageViewModel
+
+@{
+    ViewData["Title"] = "User Permissions";
+    Layout = "_Layout";
+}
+
+<h4 class="mb-3">User Permissions</h4>
+
+<form method="get" asp-action="Matrix" class="mb-4" style="max-width: 400px;">
+
+    <label class="form-label">Select User</label>
+
+    <select name="userId"
+            class="form-select"
+            onchange="this.form.submit()">
+
+        <option value="">-- Select a username --</option>
+
+        @foreach (var user in Model.Users)
+        {
+            <option value="@user.Id"
+                    selected="@(Model.SelectedUserId == user.Id)">
+                @user.Name
+            </option>
+        }
+
+    </select>
+
+</form>
+
+@if (Model.SelectedUserId.HasValue)
+{
+    <div class="alert alert-info py-2">
+        Editing permissions for role
+        <strong>@Model.RoleName</strong>
+        (user <strong>@Model.Username</strong>).
+        Since permissions belong to the role, this also affects every other user
+        with the same role.
+    </div>
+
+    <form asp-action="ApplyMatrix" method="post">
+
+        <input type="hidden"
+               name="userId"
+               value="@Model.SelectedUserId" />
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Menu</th>
+                        <th class="text-center" style="width: 90px;">View</th>
+                        <th class="text-center" style="width: 90px;">Add</th>
+                        <th class="text-center" style="width: 90px;">Edit</th>
+                        <th class="text-center" style="width: 90px;">Delete</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @for (int i = 0; i < Model.Rows.Count; i++)
+                    {
+                        var row = Model.Rows[i];
+
+                        <tr>
+
+                            <td>
+                                @row.MenuName
+
+                                <input type="hidden"
+                                       name="Rows[@i].MenuId"
+                                       value="@row.MenuId" />
+
+                                <input type="hidden"
+                                       name="Rows[@i].MenuName"
+                                       value="@row.MenuName" />
+                            </td>
+
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       name="Rows[@i].CanView"
+                                       value="true"
+                                       class="form-check-input"
+                                       @(row.CanView ? "checked" : "") />
+                            </td>
+
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       name="Rows[@i].CanAdd"
+                                       value="true"
+                                       class="form-check-input"
+                                       @(row.CanAdd ? "checked" : "") />
+                            </td>
+
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       name="Rows[@i].CanEdit"
+                                       value="true"
+                                       class="form-check-input"
+                                       @(row.CanEdit ? "checked" : "") />
+                            </td>
+
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       name="Rows[@i].CanDelete"
+                                       value="true"
+                                       class="form-check-input"
+                                       @(row.CanDelete ? "checked" : "") />
+                            </td>
+
+                        </tr>
+                    }
+
+                    @if (!Model.Rows.Any())
+                    {
+                        <tr>
+                            <td colspan="5"
+                                class="text-center text-muted py-3">
+                                No active menus found.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <button type="submit" class="btn btn-dark">
+            Apply
+        </button>
+
+    </form>
+}
