@@ -2,7 +2,10 @@ using GsFashion.Repository.Dapper;
 using GsFashion.Repository.Extension;
 using GsFashion.Service.Extenstion;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.FileProviders;
 
+var imageRootPath = @"D:\GSFashion";
+Directory.CreateDirectory(imageRootPath); // ensure the folder exists on first run
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -46,9 +49,13 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imageRootPath),
+    RequestPath = "/gsfashion-images"
+});
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

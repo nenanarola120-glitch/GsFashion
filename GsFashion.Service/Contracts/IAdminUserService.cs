@@ -1,10 +1,10 @@
-using GsFashion.Repository.Models;
+﻿using GsFashion.Repository.Models;
 using GsFashion.Repository.Models.Common;
 using GsFashion.Repository.Models.Menu;
 
-namespace GsFashion.Repository.Contracts
+namespace GsFashion.Service.Contracts
 {
-    public interface IAdminUserRepository
+    public interface IAdminUserService
     {
         Task<AdminUserModel?> GetByUsernameAsync(string username);
         Task<AdminUserModel?> GetByIdAsync(int userId);
@@ -14,4 +14,5 @@ namespace GsFashion.Repository.Contracts
         Task<Response> UpdateAsync(AdminUserModel user);
         Task<Response> DeleteAsync(int userId);
     }
+
 }

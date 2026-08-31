@@ -1,0 +1,104 @@
+﻿@model IEnumerable<GsFashion.Repository.Models.MenuModel>
+
+@{
+    ViewData["Title"] = "Menu List";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Menu List</h4>
+
+        <a asp-controller="Menu"
+           asp-action="AddMenu"
+           class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Add Menu
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Menu Name</th>
+                            <th>Parent Menu</th>
+                            <th>Display Order</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            int srNo = 1;
+
+                            foreach (var menu in Model)
+                            {
+                                <tr>
+                                    <td>@srNo</td>
+
+                                    <td>
+                                        @menu.MenuName
+                                    </td>
+
+                                    <td>
+                                        @menu.ParentMenuId
+                                    </td>
+
+                                    <td>
+                                        @menu.DisplayOrder
+                                    </td>
+
+                                    
+
+                                    <td>
+                                        
+                                         <a asp-controller="Menu"
+                                           asp-action="EditMenu"
+                                           asp-route-id="@menu.MenuId"
+                                           class="btn btn-sm btn-warning">
+                                            Edit
+                                        </a> 
+
+                                        <form asp-controller="Menu"
+                                              asp-action="DeleteMenu"
+                                              method="post"
+                                              style="display:inline;">
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@menu.MenuId" />
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this menu?');">
+                                                Delete
+                                            </button>
+
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                srNo++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    No menus found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>

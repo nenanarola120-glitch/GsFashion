@@ -66,6 +66,8 @@ namespace GsFashion.MVC.Controllers
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
 
+            TempData["Success"] = "Log in suucessfully.";
+
             return RedirectToAction("Index", "Dashboard");
         }
 

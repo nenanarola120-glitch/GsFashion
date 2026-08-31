@@ -8,14 +8,12 @@ namespace GsFashion.Repository.Extension
     {
         public static IServiceCollection BuildRepositoryDependancyInjectionconfig(this IServiceCollection services)
         {
-            //services.AddScoped<IUserRepository, UserRepository>();
-            //services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddTransient<IAdminUserRepository, AdminUserRepo>();
             services.AddTransient<IMenuRepository, MenuRepo>();
             services.AddTransient<IRoleRepository, RoleRepo>();
             services.AddTransient<IRoleMenuPermissionRepository, RoleMenuPermissionRepo>();
-            //services.AddTransient<,>();
-            //services.AddTransient<,>();
+            services.AddScoped<ICategoryRepository, CategoryRepo>();
+            services.AddScoped<IInventoryItemRepository, InventoryItemRepo>();
             //services.AddTransient<,>();
             //services.AddTransient<,>();
             //services.AddTransient<,>();

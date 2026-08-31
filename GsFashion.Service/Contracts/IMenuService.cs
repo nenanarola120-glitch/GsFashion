@@ -23,5 +23,7 @@ namespace GsFashion.Service.Contracts
         Task<Response> DeleteAsync(int menuId);
         // Flat list from usp_get_menus_by_role, nested into parent/children for the sidebar
         Task<List<MenuTreeModel>> GetMenuTreeForRoleAsync(int roleId);
+
+  
     }
 }

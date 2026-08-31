@@ -4,6 +4,7 @@ using GsFashion.Repository.Dapper;
 using GsFashion.Repository.Enums;
 using GsFashion.Repository.Models;
 using GsFashion.Repository.Models.Common;
+using GsFashion.Repository.Models.Menu;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -51,6 +52,18 @@ namespace GsFashion.Repository.Repository
             var result = await _context.QueryFirstOrDefaultAsync<AdminUserModel>(
                 _adminUserSp,
                 new { Type = SPEnum.GetById.ToString(), user_id = userId },
+                commandType: CommandType.StoredProcedure);
+
+            return result;
+        }
+        #endregion
+
+        #region Get All dropdown list
+        public async Task<IEnumerable<DropDownResponse>> GetUserDropDown()
+        {
+            var result = await _context.QueryAsync<DropDownResponse>(
+                _adminUserSp,
+                new { Type = SPEnum.DropDown.ToString() },
                 commandType: CommandType.StoredProcedure);
 
             return result;
