@@ -23,9 +23,9 @@ namespace GsFashion.MVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllItem()
+        public async Task<IActionResult> GetAllItem(string searchingString = null)
         {
-            var items = await _itemService.GetAllAsync();
+            var items = await _itemService.GetAllAsync(searchingString);
             return View(items);
         }
 

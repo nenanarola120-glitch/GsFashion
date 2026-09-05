@@ -22,6 +22,7 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_manage_rentals]
 AS
 BEGIN
     SET NOCOUNT ON;
+			 
 
     IF @type = 'GetAll'
     BEGIN
@@ -46,35 +47,24 @@ BEGIN
             r.created_at AS CreatedAt
         FROM rentals r
         INNER JOIN customers c ON r.customer_id = c.customer_id
-        WHERE r.status <> 'Cancelled'
+        --WHERE r.status <> 'Cancelled'
         ORDER BY r.rental_id DESC;
         RETURN;
     END
 
     ELSE IF @type = 'GetById'
     BEGIN
-        SELECT
-            r.rental_id AS RentalId,
-            r.customer_id AS CustomerId,
-            c.first_name AS FirstName,
-            c.last_name AS LastName,
-            c.phone_number AS PhoneNumber,
-            r.booking_date AS BookingDate,
-            r.rental_start_date AS RentalStartDate,
-            r.expected_return_date AS ExpectedReturnDate,
-            r.actual_return_date AS ActualReturnDate,
-            r.total_rent_amount AS TotalRentAmount,
-            r.security_deposit AS SecurityDeposit,
-            r.discount AS Discount,
-            r.grand_total AS GrandTotal,
-            r.amount_paid AS AmountPaid,
-            r.balance_amount AS BalanceAmount,
-            r.status AS Status,
-            r.notes AS Notes,
-            r.created_at AS CreatedAt
+        SELECT r.rental_id AS RentalId, r.customer_id AS CustomerId, c.first_name AS CustomerFirstName,
+            c.last_name AS CustomerLastName,c.email AS CustomerEmail,c.address AS CustomerAddress,
+            c.phone_number AS CustomerPhoneNumber,r.booking_date AS BookingDate,r.rental_start_date AS RentalStartDate,r.expected_return_date AS ExpectedReturnDate,r.actual_return_date AS ActualReturnDate,r.total_rent_amount AS TotalRentAmount,r.security_deposit AS SecurityDeposit,
+            r.discount AS Discount,r.grand_total AS GrandTotal,r.amount_paid AS AmountPaid,
+            r.balance_amount AS BalanceAmount,r.status AS Status,r.notes AS Notes,r.created_at AS CreatedAt
         FROM rentals r
         INNER JOIN customers c ON r.customer_id = c.customer_id
         WHERE r.rental_id = @rental_id;
+		
+		select ii.sku_code AS SkuCode,ii.name AS Name,ii.baserentalprice AS BaseRentalPrice,ii.security_deposit AS SecurityDeposit from inventory_items ii inner join rental_items ri on ii.item_id=ri.item_id where ri.rental_id= @rental_id;
+
         RETURN;
     END
 
@@ -351,31 +341,31 @@ BEGIN
         BEGIN TRY
             BEGIN TRANSACTION;
 
-            DECLARE @ReleaseItemId INT;
-            DECLARE @ReleasedCount INT = 0;
+            --DECLARE @ReleaseItemId INT;
+            --DECLARE @ReleasedCount INT = 0;
 
-            DECLARE release_cursor CURSOR LOCAL FAST_FORWARD FOR
-                SELECT item_id FROM rental_items WHERE rental_id = @rental_id;
+            --DECLARE release_cursor CURSOR LOCAL FAST_FORWARD FOR
+            --    SELECT item_id FROM rental_items WHERE rental_id = @rental_id;
 
-            OPEN release_cursor;
-            FETCH NEXT FROM release_cursor INTO @ReleaseItemId;
+            --OPEN release_cursor;
+            --FETCH NEXT FROM release_cursor INTO @ReleaseItemId;
 
-            WHILE @@FETCH_STATUS = 0
-            BEGIN
-                UPDATE inventory_items SET status = 'Available' WHERE item_id = @ReleaseItemId;
-                SET @ReleasedCount = @ReleasedCount + 1;
+            --WHILE @@FETCH_STATUS = 0
+            --BEGIN
+            --    UPDATE inventory_items SET status = 'Available' WHERE item_id = @ReleaseItemId;
+            --    SET @ReleasedCount = @ReleasedCount + 1;
 
-                FETCH NEXT FROM release_cursor INTO @ReleaseItemId;
-            END
+            --    FETCH NEXT FROM release_cursor INTO @ReleaseItemId;
+            --END
 
-            CLOSE release_cursor;
-            DEALLOCATE release_cursor;
+            --CLOSE release_cursor;
+            --DEALLOCATE release_cursor;
 
             UPDATE rentals SET status = 'Cancelled' WHERE rental_id = @rental_id;
 
             COMMIT TRANSACTION;
 
-            SELECT CONCAT('Rental booking cancelled successfully. ', @ReleasedCount, ' item(s) released back to Available.') AS Message, 1 AS Status;
+            SELECT 'Rental booking cancelled successfully.' AS Message, 1 AS Status;
         END TRY
         BEGIN CATCH
             IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

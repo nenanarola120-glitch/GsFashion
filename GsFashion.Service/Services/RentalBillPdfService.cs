@@ -1,469 +1,57 @@
-﻿using GsFashion.Repository.Models.Rental;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+using System.Globalization;
+using System.Net;
+using GsFashion.Repository.Models.Rental;
+using HtmlRendererCore.PdfSharp;
+using Microsoft.AspNetCore.Hosting;
+using PdfSharp;
 
-namespace GsFashion.MVC.Services
+namespace GsFashion.MVC.Services;
+
+/// <summary>Creates rental invoices from an editable HTML template and keeps the PDF in memory.</summary>
+public class RentalBillPdfService
 {
-    public class RentalBillPdfService
+    private readonly IWebHostEnvironment _environment;
+    public RentalBillPdfService(IWebHostEnvironment environment) => _environment = environment;
+
+    public MemoryStream Generate(RentalModel rental)
     {
-        public byte[] Generate(RentalModel rental)
-        {
-            QuestPDF.Settings.License =
-                LicenseType.Community;
-
-            var document =
-                Document.Create(container =>
-                {
-                    container.Page(page =>
-                    {
-                        page.Size(PageSizes.A4);
-
-                        page.Margin(30);
-
-                        page.DefaultTextStyle(
-                            x => x.FontSize(10));
-
-                        // =====================================
-                        // HEADER
-                        // =====================================
-
-                        page.Header()
-                            .Column(column =>
-                            {
-                                column.Item()
-                                    .AlignCenter()
-                                    .Text("GS FASHION")
-                                    .Bold()
-                                    .FontSize(24);
-
-                                column.Item()
-                                    .AlignCenter()
-                                    .Text("CHOLI RENTAL BILL")
-                                    .Bold()
-                                    .FontSize(14);
-
-                                column.Item()
-                                    .PaddingTop(5)
-                                    .LineHorizontal(1);
-                            });
-
-
-                        // =====================================
-                        // CONTENT
-                        // =====================================
-
-                        page.Content()
-                            .PaddingVertical(15)
-                            .Column(column =>
-                            {
-                                // ---------------------------------
-                                // Bill Information
-                                // ---------------------------------
-
-                                column.Item()
-                                    .Row(row =>
-                                    {
-                                        row.RelativeItem()
-                                            .Column(left =>
-                                            {
-                                                left.Item()
-                                                    .Text(
-                                                        $"Bill No: RENT-{rental.RentalId:D5}");
-
-                                                left.Item()
-                                                    .Text(
-                                                        $"Booking Date: {rental.BookingDate:dd-MM-yyyy HH:mm}");
-                                            });
-
-                                        row.RelativeItem()
-                                            .AlignRight()
-                                            .Column(right =>
-                                            {
-                                                right.Item()
-                                                    .Text(
-                                                        $"Rental Start: {rental.RentalStartDate:dd-MM-yyyy}");
-
-                                                right.Item()
-                                                    .Text(
-                                                        $"Expected Return: {rental.ExpectedReturnDate:dd-MM-yyyy}");
-                                            });
-                                    });
-
-
-                                column.Item()
-                                    .PaddingVertical(10);
-
-
-                                // ---------------------------------
-                                // Customer
-                                // ---------------------------------
-
-                                column.Item()
-                                    .Text("CUSTOMER DETAILS")
-                                    .Bold()
-                                    .FontSize(12);
-
-
-                                column.Item()
-                                    .PaddingTop(5)
-                                    .Border(1)
-                                    .Padding(8)
-                                    .Column(customer =>
-                                    {
-                                        customer.Item()
-                                            .Text(
-                                                $"Name: {rental.CustomerFirstName} {rental.CustomerLastName}");
-
-                                        customer.Item()
-                                            .Text(
-                                                $"Phone: {rental.CustomerPhoneNumber}");
-
-                                        if (!string.IsNullOrWhiteSpace(
-                                            rental.CustomerEmail))
-                                        {
-                                            customer.Item()
-                                                .Text(
-                                                    $"Email: {rental.CustomerEmail}");
-                                        }
-
-                                        if (!string.IsNullOrWhiteSpace(
-                                            rental.CustomerAddress))
-                                        {
-                                            customer.Item()
-                                                .Text(
-                                                    $"Address: {rental.CustomerAddress}");
-                                        }
-                                    });
-
-
-                                column.Item()
-                                    .PaddingVertical(10);
-
-
-                                // ---------------------------------
-                                // Choli Items
-                                // ---------------------------------
-
-                                column.Item()
-                                    .Text("RENTAL ITEMS")
-                                    .Bold()
-                                    .FontSize(12);
-
-
-                                column.Item()
-                                    .PaddingTop(5)
-                                    .Table(table =>
-                                    {
-                                        table.ColumnsDefinition(
-                                            columns =>
-                                            {
-                                                columns.ConstantColumn(35);
-
-                                                columns.RelativeColumn(2);
-
-                                                columns.RelativeColumn(3);
-
-                                                columns.RelativeColumn(2);
-
-                                                columns.RelativeColumn(2);
-                                            });
-
-
-                                        // Header
-
-                                        table.Header(header =>
-                                        {
-                                            header.Cell()
-                                                .Element(HeaderStyle)
-                                                .Text("#");
-
-                                            header.Cell()
-                                                .Element(HeaderStyle)
-                                                .Text("SKU");
-
-                                            header.Cell()
-                                                .Element(HeaderStyle)
-                                                .Text("Choli");
-
-                                            header.Cell()
-                                                .Element(HeaderStyle)
-                                                .AlignRight()
-                                                .Text("Rent");
-
-                                            header.Cell()
-                                                .Element(HeaderStyle)
-                                                .AlignRight()
-                                                .Text("Deposit");
-                                        });
-
-
-                                        var index = 1;
-
-
-                                        foreach (
-                                            var item
-                                            in rental.InventoryItemModels)
-                                        {
-                                            table.Cell()
-                                                .Element(CellStyle)
-                                                .Text(
-                                                    index.ToString());
-
-                                            table.Cell()
-                                                .Element(CellStyle)
-                                                .Text(
-                                                    item.SkuCode);
-
-                                            table.Cell()
-                                                .Element(CellStyle)
-                                                .Text(
-                                                    item.Name);
-
-                                            table.Cell()
-                                                .Element(CellStyle)
-                                                .AlignRight()
-                                                .Text(
-                                                    $"₹ {item.BaseRentalPrice:N2}");
-
-                                            table.Cell()
-                                                .Element(CellStyle)
-                                                .AlignRight()
-                                                .Text(
-                                                    $"₹ {item.SecurityDeposit:N2}");
-
-                                            index++;
-                                        }
-                                    });
-
-
-                                column.Item()
-                                    .PaddingVertical(10);
-
-
-                                // ---------------------------------
-                                // Charges
-                                // ---------------------------------
-
-                                column.Item()
-                                    .AlignRight()
-                                    .Width(250)
-                                    .Column(charges =>
-                                    {
-                                        charges.Item()
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Total Rent:");
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.TotalRentAmount:N2}");
-                                            });
-
-
-                                        charges.Item()
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Security Deposit:");
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.SecurityDeposit:N2}");
-                                            });
-
-
-                                        charges.Item()
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Late Fee:");
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.LateFee:N2}");
-                                            });
-
-
-                                        charges.Item()
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Damage Fee:");
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.DamageFee:N2}");
-                                            });
-
-
-                                        charges.Item()
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Discount:");
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"- ₹ {rental.Discount:N2}");
-                                            });
-
-
-                                        charges.Item()
-                                            .PaddingTop(5)
-                                            .LineHorizontal(1);
-
-
-                                        charges.Item()
-                                            .PaddingTop(5)
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("GRAND TOTAL")
-                                                    .Bold();
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.GrandTotal:N2}")
-                                                    .Bold();
-                                            });
-
-
-                                        charges.Item()
-                                            .PaddingTop(5)
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Amount Paid:");
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.AmountPaid:N2}");
-                                            });
-
-
-                                        charges.Item()
-                                            .Row(row =>
-                                            {
-                                                row.RelativeItem()
-                                                    .Text("Balance:")
-                                                    .Bold();
-
-                                                row.RelativeItem()
-                                                    .AlignRight()
-                                                    .Text(
-                                                        $"₹ {rental.BalanceAmount:N2}")
-                                                    .Bold();
-                                            });
-                                    });
-
-
-                                column.Item()
-                                    .PaddingTop(20);
-
-
-                                // ---------------------------------
-                                // Condition
-                                // ---------------------------------
-
-                                if (!string.IsNullOrWhiteSpace(
-                                    rental.ConditionOut))
-                                {
-                                    column.Item()
-                                        .Text("CONDITION OUT")
-                                        .Bold()
-                                        .FontSize(11);
-
-                                    column.Item()
-                                        .PaddingTop(5)
-                                        .Text(
-                                            rental.ConditionOut);
-                                }
-
-
-                                // ---------------------------------
-                                // Notes
-                                // ---------------------------------
-
-                                if (!string.IsNullOrWhiteSpace(
-                                    rental.Notes))
-                                {
-                                    column.Item()
-                                        .PaddingTop(10)
-                                        .Text("NOTES")
-                                        .Bold()
-                                        .FontSize(11);
-
-                                    column.Item()
-                                        .PaddingTop(5)
-                                        .Text(
-                                            rental.Notes);
-                                }
-
-
-                                column.Item()
-                                    .PaddingTop(25)
-                                    .AlignCenter()
-                                    .Text(
-                                        "Thank you for choosing GS Fashion.")
-                                    .Bold();
-
-                                column.Item()
-                                    .AlignCenter()
-                                    .Text(
-                                        "Please keep this bill for your records.");
-                            });
-
-
-                        // =====================================
-                        // FOOTER
-                        // =====================================
-
-                        page.Footer()
-                            .AlignCenter()
-                            .Text(text =>
-                            {
-                                text.Span(
-                                    "GS Fashion | Choli Rental");
-                            });
-                    });
-                });
-
-
-            return document.GeneratePdf();
-        }
-
-
-        // =========================================
-        // TABLE STYLES
-        // =========================================
-
-        static IContainer HeaderStyle(
-            IContainer container)
-        {
-            return container
-                .Background(Colors.Grey.Lighten2)
-                .Border(1)
-                .BorderColor(Colors.Grey.Medium)
-                .Padding(5);
-        }
-
-
-        static IContainer CellStyle(
-            IContainer container)
-        {
-            return container
-                .Border(1)
-                .BorderColor(Colors.Grey.Lighten2)
-                .Padding(5);
-        }
+        ArgumentNullException.ThrowIfNull(rental);
+        var templatePath = Path.Combine(_environment.ContentRootPath, "Templates", "RentalBillTemplate.html");
+        if (!File.Exists(templatePath)) throw new FileNotFoundException("Rental bill HTML template was not found.", templatePath);
+
+        var html = PopulateTemplate(File.ReadAllText(templatePath), rental);
+        var pdfDocument = PdfGenerator.GeneratePdf(html, PageSize.A4);
+        var pdfStream = new MemoryStream();
+        pdfDocument.Save(pdfStream, false);
+        pdfStream.Position = 0;
+        return pdfStream;
     }
+
+    private string PopulateTemplate(string template, RentalModel rental)
+    {
+        var items = rental.InventoryItemModels?.ToList() ?? [];
+        var totalAmount = rental.GrandTotal != 0 ? rental.GrandTotal : rental.TotalRentAmount + rental.SecurityDeposit + rental.LateFee + rental.DamageFee - rental.Discount;
+        var values = new Dictionary<string, string>
+        {
+            ["{{LOGO}}"] = GetLogoDataUri(), ["{{BILL_NUMBER}}"] = $"RENT-{rental.RentalId:D5}",
+            ["{{BOOKING_DATE}}"] = Date(rental.BookingDate, "dd MMM yyyy, hh:mm tt"), ["{{RENTAL_START_DATE}}"] = Date(rental.RentalStartDate, "dd MMM yyyy"), ["{{EXPECTED_RETURN_DATE}}"] = Date(rental.ExpectedReturnDate, "dd MMM yyyy"),
+            ["{{CUSTOMER_NAME}}"] = Encode($"{rental.CustomerFirstName} {rental.CustomerLastName}".Trim()), ["{{CUSTOMER_PHONE}}"] = Encode(rental.CustomerPhoneNumber), ["{{CUSTOMER_EMAIL}}"] = Encode(rental.CustomerEmail), ["{{CUSTOMER_ADDRESS}}"] = Encode(rental.CustomerAddress),
+            ["{{ITEM_COUNT}}"] = items.Count.ToString(CultureInfo.InvariantCulture), ["{{ITEM_ROWS}}"] = ItemRows(items),
+            ["{{TOTAL_RENT}}"] = Money(rental.TotalRentAmount), ["{{TOTAL_DEPOSIT}}"] = Money(rental.SecurityDeposit), ["{{DISCOUNT}}"] = Money(rental.Discount), ["{{TOTAL_AMOUNT}}"] = Money(totalAmount), ["{{AMOUNT_PAID}}"] = Money(rental.AmountPaid), ["{{BALANCE_AMOUNT}}"] = Money(rental.BalanceAmount), ["{{NOTES}}"] = Encode(rental.Notes)
+        };
+        foreach (var (token, value) in values) template = template.Replace(token, value, StringComparison.Ordinal);
+        return template;
+    }
+
+    private string GetLogoDataUri()
+    {
+        var logoPath = Path.Combine(_environment.WebRootPath, "images", "logo.png");
+        return File.Exists(logoPath) ? $"data:image/png;base64,{Convert.ToBase64String(File.ReadAllBytes(logoPath))}" : string.Empty;
+    }
+
+    private static string ItemRows(IEnumerable<GsFashion.Repository.Models.InventoryItem.InventoryItemModel> items) =>
+        string.Join(Environment.NewLine, items.Select((item, index) => $"<tr><td>{index + 1}</td><td>{Encode(item.SkuCode)}</td><td>{Encode(item.Name)}</td><td class=\"amount\">{Money(item.BaseRentalPrice)}</td><td class=\"amount\">{Money(item.SecurityDeposit)}</td><td class=\"amount\">{Money(item.BaseRentalPrice + item.SecurityDeposit)}</td></tr>"));
+    private static string Date(DateTime? value, string format) => value?.ToString(format, CultureInfo.InvariantCulture) ?? "-";
+    private static string Money(decimal amount) => $"&#8377; {amount:N2}";
+    private static string Encode(string? value) => WebUtility.HtmlEncode(value ?? "-");
 }

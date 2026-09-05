@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="QuestPDF" Version="2026.8.0" />
+    <Content Include="Templates\RentalBillTemplate.html" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

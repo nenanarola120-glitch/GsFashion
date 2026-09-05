@@ -84,19 +84,7 @@ BEGIN
 
             INSERT INTO payments (rental_id, amount, payment_date, payment_method, transaction_ref, payment_type)
             VALUES (@rental_id, @amount, ISNULL(@payment_date, GETDATE()), @payment_method, @transaction_ref, @payment_type);
-
-            UPDATE rentals
-            SET amount_paid = (
-                    SELECT ISNULL(SUM(amount), 0) FROM payments
-                    WHERE rental_id = @rental_id
-                      AND payment_type IN ('Advance', 'Final_Settlement', 'Late_Fee_Paid')
-                ),
-                balance_amount = grand_total - (
-                    SELECT ISNULL(SUM(amount), 0) FROM payments
-                    WHERE rental_id = @rental_id
-                      AND payment_type IN ('Advance', 'Final_Settlement', 'Late_Fee_Paid')
-                )
-            WHERE rental_id = @rental_id;
+           
 
             COMMIT TRANSACTION;
 
@@ -153,18 +141,7 @@ BEGIN
                 payment_type = @payment_type
             WHERE payment_id = @payment_id;
 
-            UPDATE rentals
-            SET amount_paid = (
-                    SELECT ISNULL(SUM(amount), 0) FROM payments
-                    WHERE rental_id = @rental_id
-                      AND payment_type IN ('Advance', 'Final_Settlement', 'Late_Fee_Paid')
-                ),
-                balance_amount = grand_total - (
-                    SELECT ISNULL(SUM(amount), 0) FROM payments
-                    WHERE rental_id = @rental_id
-                      AND payment_type IN ('Advance', 'Final_Settlement', 'Late_Fee_Paid')
-                )
-            WHERE rental_id = @rental_id;
+            
 
             COMMIT TRANSACTION;
 
@@ -191,20 +168,8 @@ BEGIN
         BEGIN TRY
             BEGIN TRANSACTION;
 
-            DELETE FROM payments WHERE payment_id = @payment_id;
-
-            UPDATE rentals
-            SET amount_paid = (
-                    SELECT ISNULL(SUM(amount), 0) FROM payments
-                    WHERE rental_id = @DeleteRentalId
-                      AND payment_type IN ('Advance', 'Final_Settlement', 'Late_Fee_Paid')
-                ),
-                balance_amount = grand_total - (
-                    SELECT ISNULL(SUM(amount), 0) FROM payments
-                    WHERE rental_id = @DeleteRentalId
-                      AND payment_type IN ('Advance', 'Final_Settlement', 'Late_Fee_Paid')
-                )
-            WHERE rental_id = @DeleteRentalId;
+            --DELETE FROM payments WHERE payment_id = @payment_id;
+			update payments set deleted_at=GETDATE(),is_deleted=1 where payment_id=@payment_id;
 
             COMMIT TRANSACTION;
 

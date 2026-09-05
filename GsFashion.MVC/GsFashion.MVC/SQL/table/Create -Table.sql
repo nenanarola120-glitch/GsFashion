@@ -7,18 +7,24 @@ CREATE TABLE customers (
     phone_number NVARCHAR(20) NOT NULL UNIQUE,
     email NVARCHAR(150) NULL,
     address NVARCHAR(MAX) NULL,
+	deleted_at DATETIME NULL ,
+	is_deleted bit null,
     created_at DATETIME NOT NULL DEFAULT GETDATE()
 );
 GO
+
 
 -- Categories Table
 CREATE TABLE categories (
     category_id INT IDENTITY(1,1) PRIMARY KEY,
     name NVARCHAR(100) NOT NULL,
     description NVARCHAR(MAX) NULL,
+	deleted_at DATETIME NULL ,
+	is_deleted bit null,
     created_at DATETIME NOT NULL DEFAULT GETDATE()
 );
 GO
+
 
 -- Inventory Items Table
 CREATE TABLE inventory_items (
@@ -34,6 +40,8 @@ CREATE TABLE inventory_items (
     status NVARCHAR(20) NOT NULL DEFAULT 'Available'
         CHECK (status IN ('Available','Rented','InWash','UnderRepair','Retired')),
     image_url NVARCHAR(500) NULL,
+	deleted_at DATETIME NULL ,
+	is_deleted bit null,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FKinventorycategory FOREIGN KEY (category_id)
         REFERENCES categories(category_id)
@@ -52,8 +60,6 @@ CREATE TABLE rentals (
 
     total_rent_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
     security_deposit DECIMAL(10,2) NOT NULL DEFAULT 0,
-    late_fee DECIMAL(10,2) NOT NULL DEFAULT 0,
-    damage_fee DECIMAL(10,2) NOT NULL DEFAULT 0,
     discount DECIMAL(10,2) NOT NULL DEFAULT 0,
     grand_total DECIMAL(10,2) NOT NULL DEFAULT 0,
 
@@ -63,13 +69,15 @@ CREATE TABLE rentals (
     status NVARCHAR(20) NOT NULL ,
 
     notes NVARCHAR(MAX) NULL,
-
+	deleted_at DATETIME NULL ,
+	is_deleted bit null,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT FKrentalscustomer
         FOREIGN KEY (customer_id)
         REFERENCES customers(customer_id)
 );
+
 CREATE TABLE rental_items (
     rental_item_id INT IDENTITY(1,1) PRIMARY KEY,
 
@@ -80,7 +88,8 @@ CREATE TABLE rental_items (
 
     condition_out NVARCHAR(MAX) NULL,
     condition_in NVARCHAR(MAX) NULL,
-
+	deleted_at DATETIME NULL ,
+	is_deleted bit null,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT FK_rentalitems_rental
@@ -105,7 +114,8 @@ CREATE TABLE payments (
     transaction_ref NVARCHAR(100) NULL,
 
     payment_type NVARCHAR(30) NOT NULL,
-
+	deleted_at DATETIME NULL ,
+	is_deleted bit null,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT FK_payments_rental

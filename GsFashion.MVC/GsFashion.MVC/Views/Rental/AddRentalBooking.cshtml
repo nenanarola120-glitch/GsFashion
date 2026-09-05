@@ -119,7 +119,9 @@
                         <label asp-for="CustomerPhoneNumber" class="form-label">
                             Phone Number <span class="text-danger">*</span>
                         </label>
-                        <input asp-for="CustomerPhoneNumber" class="form-control" placeholder="Enter phone number" />
+                        <input asp-for="CustomerPhoneNumber" class="form-control" type="tel" inputmode="numeric"
+                               autocomplete="tel" maxlength="10" pattern="[0-9]{10}"
+                               placeholder="Enter 10-digit mobile number" />
                         <span asp-validation-for="CustomerPhoneNumber" class="text-danger"></span>
                     </div>
 
@@ -287,6 +289,12 @@
         });
 
         document.getElementById("AmountPaid").addEventListener("input", calculateBalance);
+
+        // Keep the mobile field numeric and limited to ten digits while typing or pasting.
+        const customerPhoneNumber = document.getElementById("CustomerPhoneNumber");
+        customerPhoneNumber.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "").slice(0, 10);
+        });
 
         // Keep the expected return date on or after the selected rental start date.
         const rentalStartDate = document.getElementById("RentalStartDate");

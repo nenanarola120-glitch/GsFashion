@@ -58,6 +58,7 @@ CREATE TABLE role_menu_permissions (
     can_add BIT NOT NULL DEFAULT 0,
     can_edit BIT NOT NULL DEFAULT 0,
     can_delete BIT NOT NULL DEFAULT 0,
+	is_active BIT  NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_rmp_role FOREIGN KEY (role_id)
         REFERENCES roles(role_id),
@@ -66,6 +67,7 @@ CREATE TABLE role_menu_permissions (
     CONSTRAINT UQ_role_menu UNIQUE (role_id, menu_id)
 );
 GO
+
 
 -- =============================================
 -- 2. LOG (AUDIT) TABLES
