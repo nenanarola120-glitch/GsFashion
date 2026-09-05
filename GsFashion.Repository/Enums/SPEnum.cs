@@ -7,6 +7,9 @@
         GetById,
         Insert,
         Update,
-        Delete
+        Delete,
+        CustomerDropDown,
+        InventoryItemDropDown
+
     }
 }

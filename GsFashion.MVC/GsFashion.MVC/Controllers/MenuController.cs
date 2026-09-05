@@ -17,16 +17,18 @@ namespace GsFashion.MVC.Controllers
         }
 
         #region Get All
+
         [HttpGet]
         public async Task<IActionResult> GetAllMenuList()
         {
             var menus = await _menuService.GetAllAsync();
-
             return View(menus);
         }
+
         #endregion
 
         #region Get By Id
+
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
@@ -39,45 +41,46 @@ namespace GsFashion.MVC.Controllers
 
             return Json(menu);
         }
+
         #endregion
 
         #region Create - GET
+
         [HttpGet]
         public async Task<IActionResult> AddMenu()
         {
-
             ViewBag.ParentMenus = await GetParentMenuOptionsAsync();
+
             return View(new MenuModel
             {
                 IsActive = true
             });
         }
+
         #endregion
 
         #region Create - POST
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMenu(MenuModel menu)
         {
             if (!ModelState.IsValid)
             {
-
                 ViewBag.ParentMenus = await GetParentMenuOptionsAsync();
-
                 return View(menu);
             }
 
-
-           var result = await _menuService.InsertAsync(menu);
+            var result = await _menuService.InsertAsync(menu);
             SetTempData(result);
-
-            //TempData["SuccessMessage"] = "Menu added successfully.";
 
             return RedirectToAction(nameof(GetAllMenuList));
         }
+
         #endregion
 
         #region Edit - GET
+
         [HttpGet]
         public async Task<IActionResult> EditMenu(int id)
         {
@@ -92,9 +95,11 @@ namespace GsFashion.MVC.Controllers
 
             return View(menu);
         }
+
         #endregion
 
         #region Edit - POST
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditMenu(MenuModel menu)
@@ -110,9 +115,11 @@ namespace GsFashion.MVC.Controllers
 
             return RedirectToAction(nameof(GetAllMenuList));
         }
+
         #endregion
 
         #region Delete
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteMenu(int id)
@@ -124,23 +131,25 @@ namespace GsFashion.MVC.Controllers
                 return NotFound();
             }
 
-            var result =  await _menuService.DeleteAsync(id);
+            var result = await _menuService.DeleteAsync(id);
             SetTempData(result);
 
             TempData["SuccessMessage"] = "Menu deleted successfully.";
 
             return RedirectToAction(nameof(GetAllMenuList));
         }
+
         #endregion
 
         #region Menu Tree By Role
+
         [HttpGet]
         public async Task<IActionResult> GetMenuTree(int roleId)
         {
             var menus = await _menuService.GetMenuTreeForRoleAsync(roleId);
-
             return Json(menus);
         }
+
         #endregion
 
         private async Task<List<SelectListItem>> GetParentMenuSelectListAsync(int? excludeMenuId = null)
@@ -148,19 +157,20 @@ namespace GsFashion.MVC.Controllers
             var allMenus = await _menuService.GetAllAsync(); // returns MenuModel with ParentMenuId
 
             return allMenus
-                .Where(m => m.ParentMenuId == null)                                        // only top-level menus can be a parent
-                .Where(m => excludeMenuId == null || m.MenuId != excludeMenuId.Value)       // can't be its own parent
+                .Where(m => m.ParentMenuId == null)                                  // only top-level menus can be a parent
+                .Where(m => excludeMenuId == null || m.MenuId != excludeMenuId.Value) // can't be its own parent
                 .OrderBy(m => m.DisplayOrder)
                 .Select(m => new SelectListItem { Value = m.MenuId.ToString(), Text = m.MenuName })
                 .ToList();
         }
+
         private async Task<List<MenuModel>> GetParentMenuOptionsAsync(int? excludeMenuId = null)
         {
             var menus = await _menuService.GetAllAsync();
 
             return menus
                 .Where(x => x.ParentMenuId == null)                                   // only top-level menus can be a parent
-                .Where(x => excludeMenuId == null || x.MenuId != excludeMenuId.Value) // a menu can't be its own parent
+                .Where(x => excludeMenuId == null || x.MenuId != excludeMenuId.Value)  // a menu can't be its own parent
                 .OrderBy(x => x.DisplayOrder)
                 .ToList();
         }

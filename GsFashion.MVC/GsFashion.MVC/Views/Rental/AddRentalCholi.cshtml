@@ -1,0 +1,403 @@
+﻿@model GsFashion.Repository.Models.Rental.RentalModel
+
+@{
+    ViewData["Title"] = "Select Choli";
+    var searchingString = Context.Request.Query["searchingString"].ToString();
+    var selectedItemIdsFromBooking = (Model.ItemIds ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+        .Select(id => int.TryParse(id, out var itemId) ? itemId : 0)
+        .Where(itemId => itemId > 0)
+        .ToHashSet();
+    var initialSelectedItems = Model.InventoryItemModels
+        .Where(item => selectedItemIdsFromBooking.Contains(item.ItemId))
+        .Select(item => new
+        {
+            id = item.ItemId,
+            sku = item.SkuCode,
+            name = item.Name,
+            category = item.CategoryName ?? "-",
+            size = item.Size ?? "-",
+            color = item.Color ?? "-",
+            rent = item.BaseRentalPrice,
+            deposit = item.SecurityDeposit,
+            status = item.Status
+        });
+    var initialSelectedItemsJson = System.Text.Json.JsonSerializer.Serialize(initialSelectedItems);
+}
+
+<style>
+    .rental-header { background: linear-gradient(135deg, #172554, #2563eb); border-radius: 1rem; color: #fff; padding: 1.5rem; }
+    .rental-header .text-muted { color: rgba(255,255,255,.72) !important; }
+    .selection-card, .inventory-section { border-radius: 1rem; overflow: hidden; }
+    .inventory-card { border: 1px solid #e2e8f0 !important; border-radius: .85rem; cursor: pointer; transition: .2s ease; }
+    .inventory-card:hover, .inventory-card:focus { border-color: #60a5fa !important; box-shadow: 0 .75rem 1.5rem rgba(37,99,235,.13); outline: none; transform: translateY(-3px); }
+    .selected-item { background: linear-gradient(135deg, #eff6ff, #f8fbff); border: 1px solid #bfdbfe; border-radius: .85rem; }
+    .empty-selection { background: #f8fbff; border: 2px dashed #bfdbfe; border-radius: .85rem; }
+    .item-sku { color: #1e40af; }
+</style>
+
+<div class="container-fluid">
+
+    <!-- ========================================= PAGE HEADER ========================================== -->
+    <div class="rental-header d-flex justify-content-between align-items-center mb-4 shadow-sm">
+        <div>
+            <h3 class="fw-bold mb-1">Select Choli</h3>
+            <p class="text-muted mb-0">Select choli items for rental booking</p>
+        </div>
+
+        <a asp-action="GetAllRentalCholiList" class="btn btn-light">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- ========================================= SELECTED ITEMS ========================================== -->
+    <div class="card selection-card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="bi bi-bag-check text-primary me-2"></i>Selected Choli</h5>
+                    <small class="text-muted">
+                        <span id="selectedCount">0</span> item(s) selected
+                    </small>
+                </div>
+
+                <!-- CONTINUE BOOKING -->
+                <button type="button" id="continueBookingBtn" class="btn btn-primary" disabled>
+                    <i class="bi bi-arrow-right-circle"></i> Continue Booking
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Empty -->
+            <div id="emptySelected" class="empty-selection text-center py-4 text-muted">
+                <i class="bi bi-bag-plus fs-1 text-primary"></i>
+                <p class="fw-semibold text-dark mb-1 mt-2">Your selection is empty</p>
+                <small>Use “Add Choli” to move an item here.</small>
+            </div>
+
+            <!-- Selected Items -->
+            <div id="selectedItems" class="row g-3"></div>
+        </div>
+    </div>
+
+    <!-- ========================================= ALL INVENTORY ========================================== -->
+    <div class="card inventory-section shadow-sm border-0">
+        <div class="card-header bg-white">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                <h5 class="mb-0"><i class="bi bi-grid-3x3-gap text-primary me-2"></i>All Inventory Items</h5>
+                <form asp-action="AddRentalCholi" method="get" class="d-flex gap-2">
+                    <input type="search"
+                           name="searchingString"
+                           value="@searchingString"
+                           class="form-control"
+                           placeholder="Search SKU, name, color, price, or status"
+                           aria-label="Search inventory items" />
+                    <button type="submit" class="btn btn-outline-primary text-nowrap">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(searchingString))
+                    {
+                        <a asp-action="AddRentalCholi" class="btn btn-outline-secondary">Clear</a>
+                    }
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (!Model.InventoryItemModels.Any())
+            {
+                <div class="alert alert-info mb-0">
+                    No inventory items found.
+                </div>
+            }
+            else
+            {
+                <div id="inventoryItems" class="row g-3">
+                    @foreach (var item in Model.InventoryItemModels)
+                    {
+                        <div class="col-md-6 col-lg-4 col-xl-3" data-inventory-item-id="@item.ItemId">
+                            <div class="card h-100 border inventory-card"
+                                 role="button"
+                                 tabindex="0"
+                                 data-preview-image
+                                 data-img="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/no-image.png" : item.ImageUrl)"
+                                 data-name="@item.Name">
+                                <div class="card-body">
+
+                                    <!-- Status (top-left) -->
+                                    <span class="badge mb-2 @(item.Status == "Available" ? "bg-success" : "bg-secondary")">
+                                        @item.Status
+                                    </span>
+
+                                    <!-- Header -->
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-bold item-sku">@item.SkuCode</div>
+                                            <div class="text-dark fw-semibold">@item.Name</div>
+                                        </div>
+
+                                    </div>
+
+                                    <hr />
+
+                                    <!-- Details -->
+                                    <div class="small text-muted">
+                                        <div class="mb-1"><strong>Category:</strong> @(item.CategoryName ?? "-")</div>
+                                        <div class="mb-1"><strong>Size:</strong> @(item.Size ?? "-")</div>
+                                        <div class="mb-1"><strong>Color:</strong> @(item.Color ?? "-")</div>
+                                        <div class="mb-1"><strong>Rent:</strong> ₹ @item.BaseRentalPrice.ToString("0.00")</div>
+                                        <div class="mb-2"><strong>Deposit:</strong> ₹ @item.SecurityDeposit.ToString("0.00")</div>
+                                    </div>
+
+                                    <!-- Add Button -->
+                                    @if (item.Status == "Available")
+                                    {
+                                        <button type="button"
+                                                class="btn btn-outline-primary btn-sm w-100 add-item-btn"
+                                                data-id="@item.ItemId"
+                                                data-sku="@item.SkuCode"
+                                                data-name="@item.Name"
+                                                data-category="@item.CategoryName"
+                                                data-size="@item.Size"
+                                                data-color="@item.Color"
+                                                data-rent="@item.BaseRentalPrice"
+                                                data-deposit="@item.SecurityDeposit"
+                                                data-status="@item.Status">
+                                            <i class="bi bi-plus-lg"></i> Add Choli
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-secondary btn-sm w-100" disabled>
+                                            @item.Status
+                                        </button>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div id="noAvailableItems" class="alert alert-success text-center py-4 mt-3 d-none">
+                    <i class="bi bi-check2-circle fs-3 d-block mb-2"></i>
+                    All displayed items have been selected. Remove an item above to return it here.
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================================= IMAGE PREVIEW MODAL ========================================== -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewLabel">Item Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagePreviewLarge" src="" alt="Preview" class="img-fluid rounded" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================= CONTINUE FORM ========================================== -->
+<form id="continueForm" asp-action="ContinueRentalBooking" method="get">
+    <input type="hidden" name="itemIds" id="selectedItemIds" />
+</form>
+
+@section Scripts {
+    <script>
+        // ==========================================
+        // Image Preview Modal
+        // ==========================================
+        const imagePreviewModal = document.getElementById("imagePreviewModal");
+
+        function showImagePreview(card) {
+            const imgSrc = card.dataset.img;
+            const imgName = card.dataset.name;
+
+            document.getElementById("imagePreviewLarge").src = imgSrc;
+            document.getElementById("imagePreviewLabel").innerText = imgName || "Item Image";
+            bootstrap.Modal.getOrCreateInstance(imagePreviewModal).show();
+        }
+
+        document.querySelectorAll("[data-preview-image]").forEach(function (card) {
+            card.addEventListener("click", function (event) {
+                if (!event.target.closest("button")) {
+                    showImagePreview(card);
+                }
+            });
+
+            card.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    showImagePreview(card);
+                }
+            });
+        });
+
+        // ==========================================
+        // Selected items
+        // ==========================================
+        let selectedItems = @Html.Raw(initialSelectedItemsJson);
+
+        // Elements
+        const selectedItemsBox = document.getElementById("selectedItems");
+        const emptySelected = document.getElementById("emptySelected");
+        const selectedCount = document.getElementById("selectedCount");
+        const continueButton = document.getElementById("continueBookingBtn");
+        const selectedItemIds = document.getElementById("selectedItemIds");
+        const continueForm = document.getElementById("continueForm");
+        const noAvailableItems = document.getElementById("noAvailableItems");
+
+        // ==========================================
+        // Add Item
+        // ==========================================
+        document.querySelectorAll(".add-item-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const id = parseInt(this.dataset.id);
+
+                // Prevent duplicate
+                const exists = selectedItems.some(function (item) {
+                    return item.id === id;
+                });
+
+                if (exists) {
+                    return;
+                }
+
+                const item = {
+                    id: id,
+                    sku: this.dataset.sku,
+                    name: this.dataset.name,
+                    category: this.dataset.category || "-",
+                    size: this.dataset.size || "-",
+                    color: this.dataset.color || "-",
+                    rent: parseFloat(this.dataset.rent) || 0,
+                    deposit: parseFloat(this.dataset.deposit) || 0,
+                    status: this.dataset.status
+                };
+
+                selectedItems.push(item);
+                renderSelected();
+            });
+        });
+
+        // ==========================================
+        // Render Selected
+        // ==========================================
+        function renderSelected() {
+            selectedItemsBox.innerHTML = "";
+            selectedCount.innerText = selectedItems.length;
+
+            // Nothing selected
+            if (selectedItems.length === 0) {
+                emptySelected.style.display = "block";
+                continueButton.disabled = true;
+                selectedItemIds.value = "";
+                return;
+            }
+
+            // Something selected
+            emptySelected.style.display = "none";
+            continueButton.disabled = false;
+
+            // Set hidden IDs
+            selectedItemIds.value = selectedItems
+                .map(function (item) {
+                    return item.id;
+                })
+                .join(",");
+
+            // Render each item
+            selectedItems.forEach(function (item) {
+                const col = document.createElement("div");
+                col.className = "col-md-6 col-lg-4";
+
+                col.innerHTML = `
+                    <div class="selected-item h-100 p-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong class="item-sku">${item.sku}</strong>
+                                <div class="fw-semibold">${item.name}</div>
+                                <small class="text-muted">
+                                    ${item.category} | Size: ${item.size} | Color: ${item.color}
+                                    <br>
+                                    Rent: ₹ ${item.rent.toFixed(2)} | Deposit: ₹ ${item.deposit.toFixed(2)}
+                                </small>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-id="${item.id}">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                selectedItemsBox.appendChild(col);
+            });
+
+            updateAddButtons();
+        }
+
+        // ==========================================
+        // Remove Item
+        // ==========================================
+        selectedItemsBox.addEventListener("click", function (event) {
+            const button = event.target.closest(".remove-item");
+
+            if (!button) {
+                return;
+            }
+
+            const id = parseInt(button.dataset.id);
+
+            selectedItems = selectedItems.filter(function (item) {
+                return item.id !== id;
+            });
+
+            renderSelected();
+        });
+
+        // ==========================================
+        // Update Add Buttons
+        // ==========================================
+        function updateAddButtons() {
+            document.querySelectorAll(".add-item-btn").forEach(function (button) {
+                const id = parseInt(button.dataset.id);
+
+                const selected = selectedItems.some(function (item) {
+                    return item.id === id;
+                });
+
+                const inventoryItem = button.closest("[data-inventory-item-id]");
+                if (inventoryItem) {
+                    inventoryItem.classList.toggle("d-none", selected);
+                }
+            });
+
+            const visibleItems = document.querySelectorAll("[data-inventory-item-id]:not(.d-none)").length;
+            if (noAvailableItems) {
+                noAvailableItems.classList.toggle("d-none", visibleItems !== 0);
+            }
+        }
+
+        // ==========================================
+        // Restore previously selected items after using Change Choli.
+        renderSelected();
+
+        // Continue Booking
+        // ==========================================
+        continueButton.addEventListener("click", function () {
+            if (selectedItems.length === 0) {
+                return;
+            }
+
+            continueForm.submit();
+        });
+    </script>
+}

@@ -2,6 +2,7 @@
 using GsFashion.Repository.Models.Common;
 using GsFashion.Repository.Models.InventoryItem;
 using GsFashion.Repository.Models.Menu;
+using GsFashion.Repository.Repository;
 using GsFashion.Service.Contracts;
 
 namespace GsFashion.Service.Implementation
@@ -16,7 +17,12 @@ namespace GsFashion.Service.Implementation
         }
 
         public Task<IEnumerable<DropDownResponse>> GetInventoryItemDropDown() => _itemRepository.GetInventoryItemDropDown();
-        public Task<IEnumerable<InventoryItemModel>> GetAllAsync() => _itemRepository.GetAllAsync();
+        // RentalService
+        public async Task<IEnumerable<InventoryItemDropDown>> GetAvailableInventoryItems()
+        {
+            return await _itemRepository.GetAvailableInventoryItems();
+        }
+        public Task<IEnumerable<InventoryItemModel>> GetAllAsync(string? searchingString = null) => _itemRepository.GetAllAsync(searchingString);
         public Task<InventoryItemModel?> GetByIdAsync(int itemId) => _itemRepository.GetByIdAsync(itemId);
         public Task<Response> InsertAsync(InventoryItemModel item) => _itemRepository.InsertAsync(item);
         public Task<Response> UpdateAsync(InventoryItemModel item) => _itemRepository.UpdateAsync(item);
