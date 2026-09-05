@@ -50,6 +50,20 @@ namespace GsFashion.Repository.Repository
             return result;
         }
 
+        public async Task<IEnumerable<InventoryItemModel>> GetAvailableForRentalAsync(DateTime rentalStartDate, DateTime expectedReturnDate, string? searchingString = null)
+        {
+            return await _context.QueryAsync<InventoryItemModel>(
+                _itemSp,
+                new
+                {
+                    Type = "GetAvailableForRental",
+                    rental_start_date = rentalStartDate.Date,
+                    expected_return_date = expectedReturnDate.Date,
+                    searching_string = searchingString
+                },
+                commandType: CommandType.StoredProcedure);
+        }
+
         public async Task<InventoryItemModel?> GetByIdAsync(int itemId)
         {
             var result = await _context.QueryFirstOrDefaultAsync<InventoryItemModel>(

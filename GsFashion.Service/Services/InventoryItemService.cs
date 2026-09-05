@@ -23,6 +23,7 @@ namespace GsFashion.Service.Implementation
             return await _itemRepository.GetAvailableInventoryItems();
         }
         public Task<IEnumerable<InventoryItemModel>> GetAllAsync(string? searchingString = null) => _itemRepository.GetAllAsync(searchingString);
+        public Task<IEnumerable<InventoryItemModel>> GetAvailableForRentalAsync(DateTime rentalStartDate, DateTime expectedReturnDate, string? searchingString = null) => _itemRepository.GetAvailableForRentalAsync(rentalStartDate, expectedReturnDate, searchingString);
         public Task<InventoryItemModel?> GetByIdAsync(int itemId) => _itemRepository.GetByIdAsync(itemId);
         public Task<Response> InsertAsync(InventoryItemModel item) => _itemRepository.InsertAsync(item);
         public Task<Response> UpdateAsync(InventoryItemModel item) => _itemRepository.UpdateAsync(item);

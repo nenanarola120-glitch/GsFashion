@@ -27,6 +27,8 @@ namespace GsFashion.Repository.Models.Rental
         public decimal LateFee { get; set; }
         public decimal DamageFee { get; set; }
         public decimal Discount { get; set; }
+        // UI-only value. Discount is persisted as a currency amount.
+        public decimal DiscountPercent { get; set; }
         public decimal GrandTotal { get; set; }
         public decimal AmountPaid { get; set; }
         public decimal BalanceAmount { get; set; }

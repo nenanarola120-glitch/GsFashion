@@ -38,14 +38,24 @@ namespace GsFashion.MVC.Controllers
         #region Select Inventory - Get
 
         [HttpGet]
-        public async Task<IActionResult> AddRentalCholi(string searchingString = null, string itemIds = null)
+        public async Task<IActionResult> AddRentalCholi(string? searchingString = null, string? itemIds = null,
+            DateTime? rentalStartDate = null, DateTime? expectedReturnDate = null)
         {
-            var inventoryItems = await _inventoryItemService.GetAllAsync(searchingString);
+            if (rentalStartDate.HasValue && expectedReturnDate.HasValue && expectedReturnDate.Value.Date < rentalStartDate.Value.Date)
+            {
+                TempData["Error"] = "To date cannot be before from date.";
+                return RedirectToAction(nameof(AddRentalCholi), new { searchingString, itemIds, rentalStartDate });
+            }
+
+            var inventoryItems = rentalStartDate.HasValue && expectedReturnDate.HasValue
+                ? await _inventoryItemService.GetAvailableForRentalAsync(rentalStartDate.Value, expectedReturnDate.Value, searchingString)
+                : await _inventoryItemService.GetAllAsync(searchingString);
 
             var model = new RentalModel
             {
                 BookingDate = DateTime.Now,
-                RentalStartDate = DateTime.Today,
+                RentalStartDate = rentalStartDate,
+                ExpectedReturnDate = expectedReturnDate,
                 Status = "Booked",
                 ItemIds = itemIds,
                 InventoryItemModels = inventoryItems
@@ -59,7 +69,7 @@ namespace GsFashion.MVC.Controllers
         #region Continue Booking
 
         [HttpGet]
-        public async Task<IActionResult> ContinueRentalBooking(string itemIds)
+        public async Task<IActionResult> ContinueRentalBooking(string itemIds, DateTime? rentalStartDate, DateTime? expectedReturnDate)
         {
             if (string.IsNullOrWhiteSpace(itemIds))
             {
@@ -80,8 +90,16 @@ namespace GsFashion.MVC.Controllers
                 return RedirectToAction(nameof(AddRentalCholi));
             }
 
-            // Get all inventory
-            var inventoryItems = await _inventoryItemService.GetAllAsync();
+            if (!rentalStartDate.HasValue || !expectedReturnDate.HasValue || expectedReturnDate.Value.Date < rentalStartDate.Value.Date)
+            {
+                TempData["Error"] = "Select a valid from date and to date before continuing.";
+                return RedirectToAction(nameof(AddRentalCholi), new { itemIds, rentalStartDate, expectedReturnDate });
+            }
+
+            // Recheck availability for the selected dates before proceeding.
+            var inventoryItems = await _inventoryItemService.GetAvailableForRentalAsync(
+                rentalStartDate.Value,
+                expectedReturnDate.Value);
 
             // Get only selected inventory
             var selectedItems = inventoryItems
@@ -103,7 +121,8 @@ namespace GsFashion.MVC.Controllers
             var model = new RentalModel
             {
                 BookingDate = DateTime.Now,
-                RentalStartDate = DateTime.Today,
+                RentalStartDate = rentalStartDate.Value.Date,
+                ExpectedReturnDate = expectedReturnDate.Value.Date,
                 Status = "Booked",
                 ItemIds = string.Join(",", selectedIds),
                 InventoryItemModels = selectedItems,
@@ -169,6 +188,16 @@ namespace GsFashion.MVC.Controllers
 
             // At booking, only the security deposit is collected. Rent is collected later.
             model.Status = "Booked";
+            if (model.DiscountPercent is not (0 or 5 or 10 or 15))
+                ModelState.AddModelError(nameof(model.DiscountPercent), "Select a valid discount percentage.");
+
+            if (!ModelState.IsValid)
+            {
+                await LoadSelectedInventory(model);
+                return View("AddRentalBooking", model);
+            }
+
+            model.Discount = Math.Round((model.TotalRentAmount + model.SecurityDeposit) * model.DiscountPercent / 100m, 2);
             model.AmountPaid = model.SecurityDeposit;
             model.BalanceAmount = Math.Max(model.TotalRentAmount - model.Discount, 0);
             model.GrandTotal = model.TotalRentAmount + model.SecurityDeposit - model.Discount;
