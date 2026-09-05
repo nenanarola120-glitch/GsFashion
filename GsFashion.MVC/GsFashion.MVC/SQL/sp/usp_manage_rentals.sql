@@ -2,14 +2,10 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_manage_rentals]
     @type NVARCHAR(20),
     @rental_id INT = NULL,
     @customer_id INT = NULL,
-    @booking_date DATETIME = NULL,
     @rental_start_date DATE = NULL,
     @expected_return_date DATE = NULL,
-    @actual_return_date DATE = NULL,
     @total_rent_amount DECIMAL(10,2) = NULL,
     @security_deposit DECIMAL(10,2) = NULL,
-    @late_fee DECIMAL(10,2) = NULL,
-    @damage_fee DECIMAL(10,2) = NULL,
     @discount DECIMAL(10,2) = NULL,
     @grand_total DECIMAL(10,2) = NULL,
     @amount_paid DECIMAL(10,2) = NULL,
@@ -17,7 +13,12 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_manage_rentals]
     @status NVARCHAR(20) = NULL,
     @notes NVARCHAR(MAX) = NULL,
     @item_ids NVARCHAR(MAX) = NULL,       -- comma-separated inventory_items.item_id list
-    @condition_out NVARCHAR(MAX) = NULL   -- applied to newly added rental_item rows
+    @condition_out NVARCHAR(MAX) = NULL,   -- applied to newly added rental_item rows
+	 @first_name NVARCHAR(100) = NULL,
+    @last_name NVARCHAR(100) = NULL,
+    @phone_number NVARCHAR(20) = NULL,
+    @email NVARCHAR(150) = NULL,
+    @address NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -36,8 +37,6 @@ BEGIN
             r.actual_return_date AS ActualReturnDate,
             r.total_rent_amount AS TotalRentAmount,
             r.security_deposit AS SecurityDeposit,
-            r.late_fee AS LateFee,
-            r.damage_fee AS DamageFee,
             r.discount AS Discount,
             r.grand_total AS GrandTotal,
             r.amount_paid AS AmountPaid,
@@ -66,8 +65,6 @@ BEGIN
             r.actual_return_date AS ActualReturnDate,
             r.total_rent_amount AS TotalRentAmount,
             r.security_deposit AS SecurityDeposit,
-            r.late_fee AS LateFee,
-            r.damage_fee AS DamageFee,
             r.discount AS Discount,
             r.grand_total AS GrandTotal,
             r.amount_paid AS AmountPaid,
@@ -83,15 +80,16 @@ BEGIN
 
     ELSE IF @type = 'Insert'
     BEGIN
-        IF NOT EXISTS (SELECT 1 FROM customers WHERE customer_id = @customer_id)
-        BEGIN
-            SELECT 'Customer not found' AS Message, 0 AS Status;
-            RETURN;
-        END
-
+        
         IF @rental_start_date IS NULL
         BEGIN
             SELECT 'Rental start date is required' AS Message, 0 AS Status;
+            RETURN;
+        END
+
+        IF @rental_start_date < CAST(GETDATE() AS DATE)
+        BEGIN
+            SELECT 'Rental start date must be today or later' AS Message, 0 AS Status;
             RETURN;
         END
 
@@ -128,17 +126,35 @@ BEGIN
         BEGIN TRY
             BEGIN TRANSACTION;
 
+            -- A customer can make more than one booking. Reuse the customer
+            -- matched by the unique phone number instead of inserting a duplicate.
+            SELECT @customer_id = customer_id
+            FROM customers WITH (UPDLOCK, HOLDLOCK)
+            WHERE phone_number = @phone_number;
+
+            IF @customer_id IS NULL
+            BEGIN
+                INSERT INTO customers (first_name, last_name, phone_number, email, address)
+                VALUES (@first_name, @last_name, @phone_number, @email, @address);
+
+                SET @customer_id = SCOPE_IDENTITY();
+            END
+
             INSERT INTO rentals
                 (customer_id, booking_date, rental_start_date, expected_return_date, actual_return_date,
-                 total_rent_amount, security_deposit, late_fee, damage_fee, discount, grand_total,
+                 total_rent_amount, security_deposit, discount, grand_total,
                  amount_paid, balance_amount, status, notes)
             VALUES
-                (@customer_id, ISNULL(@booking_date, GETDATE()), @rental_start_date, @expected_return_date, @actual_return_date,
-                 ISNULL(@total_rent_amount, 0), ISNULL(@security_deposit, 0), ISNULL(@late_fee, 0), ISNULL(@damage_fee, 0),
-                 ISNULL(@discount, 0), ISNULL(@grand_total, 0), ISNULL(@amount_paid, 0), ISNULL(@balance_amount, 0),
+                (@customer_id, GETDATE(), @rental_start_date, @expected_return_date, NULL,
+                 ISNULL(@total_rent_amount, 0), ISNULL(@security_deposit, 0), ISNULL(@discount, 0),
+                 ISNULL(@grand_total, 0), ISNULL(@amount_paid, 0), ISNULL(@balance_amount, 0),
                  ISNULL(@status, 'Booked'), @notes);
 
             DECLARE @NewRentalId INT = SCOPE_IDENTITY();
+
+            -- The booking payment is the refundable security deposit only.
+            INSERT INTO rental_payments (rental_id, payment_type, amount, notes)
+            VALUES (@NewRentalId, 'Deposit', ISNULL(@security_deposit, 0), 'Security deposit collected at booking');
 
             DECLARE @CurrentItemId INT, @AgreedPrice DECIMAL(10,2);
             DECLARE @InsertedCount INT = 0;
@@ -154,12 +170,12 @@ BEGIN
             BEGIN
                 IF EXISTS (SELECT 1 FROM inventory_items WHERE item_id = @CurrentItemId AND status = 'Available')
                 BEGIN
-                    SELECT @AgreedPrice = baserentalprice FROM inventory_items WHERE item_id = @CurrentItemId;
+                   SELECT @AgreedPrice = baserentalprice FROM inventory_items WHERE item_id = @CurrentItemId;
 
                     INSERT INTO rental_items (rental_id, item_id, agreed_rent_price, condition_out)
                     VALUES (@NewRentalId, @CurrentItemId, @AgreedPrice, @condition_out);
 
-                    UPDATE inventory_items SET status = 'Rented' WHERE item_id = @CurrentItemId;
+            --        UPDATE inventory_items SET status = 'Rented' WHERE item_id = @CurrentItemId;
 
                     SET @InsertedCount = @InsertedCount + 1;
                 END
@@ -174,20 +190,20 @@ BEGIN
             CLOSE insert_cursor;
             DEALLOCATE insert_cursor;
 
-            IF @InsertedCount = 0
-            BEGIN
-                ROLLBACK TRANSACTION;
-                SELECT 'None of the selected items are available anymore. Booking not created.' AS Message, 0 AS Status;
-                RETURN;
-            END
+            --IF @InsertedCount = 0
+            --BEGIN
+            --    ROLLBACK TRANSACTION;
+            --    SELECT 'None of the selected items are available anymore. Booking not created.' AS Message, 0 AS Status;
+            --    RETURN;
+            --END
 
             COMMIT TRANSACTION;
 
-            IF LEN(@SkippedItems) > 0
-                SELECT CONCAT('Rental booked with ', @InsertedCount, ' item(s). Skipped unavailable item id(s): ',
-                               LEFT(@SkippedItems, LEN(@SkippedItems) - 1)) AS Message, 1 AS Status, @NewRentalId AS RentalId;
-            ELSE
-                SELECT CONCAT('Rental booked successfully with ', @InsertedCount, ' item(s)') AS Message, 1 AS Status, @NewRentalId AS RentalId;
+            --IF LEN(@SkippedItems) > 0
+            --    SELECT CONCAT('Rental booked with ', @InsertedCount, ' item(s). Skipped unavailable item id(s): ',
+            --                   LEFT(@SkippedItems, LEN(@SkippedItems) - 1)) AS Message, 1 AS Status, @NewRentalId AS RentalId;
+            --ELSE
+                SELECT CONCAT(@first_name,@last_name,'Your choli is booked successfully') AS Message, 1 AS Status, @NewRentalId AS Id;
         END TRY
         BEGIN CATCH
             IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
@@ -196,13 +212,6 @@ BEGIN
         RETURN;
     END
 
-    -- =====================================================
-    -- UPDATE: updates the rental header, and — if @item_ids
-    -- was passed — reconciles the item list via two cursors:
-    -- one releases items that were removed, one books items
-    -- that are newly added. Items present in both old and new
-    -- lists are left completely untouched.
-    -- =====================================================
     ELSE IF @type = 'Update'
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM rentals WHERE rental_id = @rental_id)
@@ -228,14 +237,10 @@ BEGIN
 
             UPDATE rentals
             SET customer_id = @customer_id,
-                booking_date = ISNULL(@booking_date, booking_date),
                 rental_start_date = @rental_start_date,
                 expected_return_date = @expected_return_date,
-                actual_return_date = @actual_return_date,
                 total_rent_amount = ISNULL(@total_rent_amount, 0),
                 security_deposit = ISNULL(@security_deposit, 0),
-                late_fee = ISNULL(@late_fee, 0),
-                damage_fee = ISNULL(@damage_fee, 0),
                 discount = ISNULL(@discount, 0),
                 grand_total = ISNULL(@grand_total, 0),
                 amount_paid = ISNULL(@amount_paid, 0),
@@ -335,11 +340,6 @@ BEGIN
         RETURN;
     END
 
-    -- =====================================================
-    -- DELETE (cancel): cursor releases every item on this
-    -- rental back to Available one at a time, then the
-    -- header is soft-deleted (status = 'Cancelled').
-    -- =====================================================
     ELSE IF @type = 'Delete'
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM rentals WHERE rental_id = @rental_id AND status <> 'Cancelled')

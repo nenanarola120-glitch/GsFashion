@@ -7,39 +7,23 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="utf-8" />
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
 
-
     <!-- Bootstrap -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
 
     <style>
-
-        /* =====================================================
-                   PAGE
-                   ===================================================== */
-
+        /* ===================== PAGE ===================== */
         body {
             margin: 0;
             padding: 0;
             background-color: #f8f9fa;
         }
 
-
-        /* =====================================================
-                   TOAST CONTAINER
-                   ===================================================== */
-
+        /* ===================== TOAST CONTAINER ===================== */
         .custom-toast-container {
             position: fixed;
             top: 20px;
@@ -47,11 +31,7 @@
             z-index: 99999;
         }
 
-
-        /* =====================================================
-                   MAIN TOAST
-                   ===================================================== */
-
+        /* ===================== MAIN TOAST ===================== */
         .custom-toast {
             width: 375px;
             min-height: 84px;
@@ -65,11 +45,7 @@
             animation: toastSlideIn 0.35s ease-out;
         }
 
-
-        /* =====================================================
-                   SUCCESS TOAST
-                   ===================================================== */
-
+        /* ===================== SUCCESS TOAST ===================== */
         .toast-success {
             border-left: 5px solid #22c55e;
         }
@@ -78,11 +54,7 @@
                 background-color: #3bd16f;
             }
 
-
-        /* =====================================================
-                   ERROR TOAST
-                   ===================================================== */
-
+        /* ===================== ERROR TOAST ===================== */
         .toast-error {
             border-left: 5px solid #ef4444;
         }
@@ -91,11 +63,7 @@
                 background-color: #ef4444;
             }
 
-
-        /* =====================================================
-                   TOAST ICON
-                   ===================================================== */
-
+        /* ===================== TOAST ICON ===================== */
         .toast-icon {
             width: 40px;
             height: 40px;
@@ -110,21 +78,13 @@
             margin-right: 15px;
         }
 
-
-        /* =====================================================
-                   TOAST CONTENT
-                   ===================================================== */
-
+        /* ===================== TOAST CONTENT ===================== */
         .toast-content {
             flex: 1;
             padding-right: 25px;
         }
 
-
-        /* =====================================================
-                   TOAST TITLE
-                   ===================================================== */
-
+        /* ===================== TOAST TITLE ===================== */
         .toast-title {
             font-size: 16px;
             font-weight: 700;
@@ -132,11 +92,7 @@
             margin-bottom: 4px;
         }
 
-
-        /* =====================================================
-                   TOAST MESSAGE
-                   ===================================================== */
-
+        /* ===================== TOAST MESSAGE ===================== */
         .toast-message {
             font-size: 14px;
             color: #777777;
@@ -144,11 +100,7 @@
             word-break: break-word;
         }
 
-
-        /* =====================================================
-                   CLOSE BUTTON
-                   ===================================================== */
-
+        /* ===================== CLOSE BUTTON ===================== */
         .toast-close {
             position: absolute;
             top: 9px;
@@ -165,18 +117,12 @@
             transition: color 0.2s ease;
         }
 
-
             .toast-close:hover {
                 color: #222222;
             }
 
-
-        /* =====================================================
-                   SLIDE IN ANIMATION
-                   ===================================================== */
-
+        /* ===================== SLIDE IN ANIMATION ===================== */
         @@keyframes toastSlideIn {
-
             from {
                 opacity: 0;
                 transform: translateX(40px);
@@ -188,13 +134,8 @@
             }
         }
 
-
-        /* =====================================================
-                   FADE OUT ANIMATION
-                   ===================================================== */
-
+        /* ===================== FADE OUT ANIMATION ===================== */
         @@keyframes toastFadeOut {
-
             from {
                 opacity: 1;
                 transform: translateX(0);
@@ -206,18 +147,13 @@
             }
         }
 
-
-        /* =====================================================
-                   LOGIN PAGE
-                   ===================================================== */
-
+        /* ===================== LOGIN PAGE ===================== */
         .login-wrapper {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
 
         .login-card {
             width: 380px;
@@ -227,13 +163,8 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
-
-        /* =====================================================
-                   MOBILE
-                   ===================================================== */
-
+        /* ===================== MOBILE ===================== */
         @@media (max-width: 576px) {
-
             .custom-toast-container {
                 top: 15px;
                 right: 10px;
@@ -248,288 +179,110 @@
                 width: calc(100% - 30px);
             }
         }
-
     </style>
-
 </head>
-
 
 <body>
 
-
-    <!-- =====================================================
-         SUCCESS TOAST
-         ===================================================== -->
+    <!-- SUCCESS TOAST -->
     @if (TempData["Success"] != null)
     {
         <div class="custom-toast-container">
-
-            <div class="custom-toast toast-success"
-                 id="successToast">
-
-                <!-- Success Icon -->
-                <div class="toast-icon">
-                    ✓
-                </div>
-
-
-                <!-- Content -->
+            <div class="custom-toast toast-success" id="successToast">
+                <div class="toast-icon">✓</div>
                 <div class="toast-content">
-
-                    <div class="toast-title">
-                        Success
-                    </div>
-
-                    <div class="toast-message">
-                        @TempData["Success"]
-                    </div>
-
+                    <div class="toast-title">Success</div>
+                    <div class="toast-message">@TempData["Success"]</div>
                 </div>
-
-
-                <!-- Close -->
-                <button type="button"
-                        class="toast-close"
-                        onclick="closeToast('successToast')">
-
-                    ×
-
-                </button>
-
+                <button type="button" class="toast-close" onclick="closeToast('successToast')">×</button>
             </div>
-
         </div>
     }
 
-
-    <!-- =====================================================
-         ERROR TOAST
-         ===================================================== -->
+    <!-- ERROR TOAST -->
     @if (TempData["Error"] != null)
     {
         <div class="custom-toast-container">
-
-            <div class="custom-toast toast-error"
-                 id="errorToast">
-
-                <!-- Error Icon -->
-                <div class="toast-icon">
-                    !
-                </div>
-
-
-                <!-- Content -->
+            <div class="custom-toast toast-error" id="errorToast">
+                <div class="toast-icon">!</div>
                 <div class="toast-content">
-
-                    <div class="toast-title">
-                        Error
-                    </div>
-
-                    <div class="toast-message">
-                        @TempData["Error"]
-                    </div>
-
+                    <div class="toast-title">Error</div>
+                    <div class="toast-message">@TempData["Error"]</div>
                 </div>
-
-
-                <!-- Close -->
-                <button type="button"
-                        class="toast-close"
-                        onclick="closeToast('errorToast')">
-
-                    ×
-
-                </button>
-
+                <button type="button" class="toast-close" onclick="closeToast('errorToast')">×</button>
             </div>
-
         </div>
     }
 
-
-    <!-- =====================================================
-         LOGIN PAGE
-         ===================================================== -->
-
+    <!-- LOGIN PAGE -->
     <div class="login-wrapper">
-
         <div class="card login-card">
-
             <div class="card-body p-4">
 
+                <h4 class="mb-1 text-center">GS Fashion</h4>
+                <p class="text-muted text-center mb-4">Admin Login</p>
 
-                <!-- Title -->
+                <!-- LOGIN FORM -->
+                <form asp-controller="Account" asp-action="Login" method="post">
 
-                <h4 class="mb-1 text-center">
-                    GS Fashion
-                </h4>
+                    <input type="hidden" asp-for="ReturnUrl" />
 
-
-                <p class="text-muted text-center mb-4">
-                    Admin Login
-                </p>
-
-
-                <!-- =================================================
-                     LOGIN FORM
-                     ================================================= -->
-
-                <form asp-controller="Account"
-                      asp-action="Login"
-                      method="post">
-
-
-                    <!-- Return URL -->
-
-                    <input type="hidden"
-                           asp-for="ReturnUrl" />
-
-
-                    <!-- =================================================
-                         USERNAME
-                         ================================================= -->
-
+                    <!-- USERNAME -->
                     <div class="mb-3">
-
-                        <label asp-for="Username"
-                               class="form-label">
-                        </label>
-
-                        <input asp-for="Username"
-                               class="form-control"
-                               autofocus />
-
-                        <span asp-validation-for="Username"
-                              class="text-danger small">
-                        </span>
-
+                        <label asp-for="Username" class="form-label"></label>
+                        <input asp-for="Username" class="form-control" autofocus />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
                     </div>
 
-
-                    <!-- =================================================
-                         PASSWORD
-                         ================================================= -->
-
+                    <!-- PASSWORD -->
                     <div class="mb-3">
-
-                        <label asp-for="Password"
-                               class="form-label">
-                        </label>
-
-                        <input asp-for="Password"
-                               type="password"
-                               class="form-control" />
-
-                        <span asp-validation-for="Password"
-                              class="text-danger small">
-                        </span>
-
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" type="password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
-
-                    <!-- =================================================
-                         LOGIN BUTTON
-                         ================================================= -->
-
-                    <button type="submit"
-                            class="btn btn-dark w-100">
-
-                        Login
-
-                    </button>
-
+                    <!-- LOGIN BUTTON -->
+                    <button type="submit" class="btn btn-dark w-100">Login</button>
 
                 </form>
 
-
-                <!-- =================================================
-                     REGISTER
-                     ================================================= -->
-
+                <!-- REGISTER -->
                 <p class="text-center text-muted mt-3 mb-0 small">
-
                     New here?
-
-                    <a asp-controller="Account"
-                       asp-action="Register">
-
-                        Create an account
-
-                    </a>
-
+                    <a asp-controller="Account" asp-action="Register">Create an account</a>
                 </p>
 
-
             </div>
-
         </div>
-
     </div>
 
-
-    <!-- =====================================================
-         TOAST JAVASCRIPT
-         ===================================================== -->
-
+    <!-- TOAST JAVASCRIPT -->
     <script>
-
-        /* =================================================
-           CLOSE TOAST
-           ================================================= */
-
         function closeToast(toastId) {
-
-            const toast =
-                document.getElementById(toastId);
+            const toast = document.getElementById(toastId);
 
             if (toast) {
-
-                toast.style.animation =
-                    "toastFadeOut 0.3s ease forwards";
-
+                toast.style.animation = "toastFadeOut 0.3s ease forwards";
 
                 setTimeout(function () {
-
                     toast.remove();
-
                 }, 300);
-
             }
-
         }
 
-
-        /* =================================================
-           AUTO HIDE TOAST
-           ================================================= */
-
         setTimeout(function () {
-
-            const successToast =
-                document.getElementById("successToast");
-
-            const errorToast =
-                document.getElementById("errorToast");
-
+            const successToast = document.getElementById("successToast");
+            const errorToast = document.getElementById("errorToast");
 
             if (successToast) {
-
                 closeToast("successToast");
-
             }
-
 
             if (errorToast) {
-
                 closeToast("errorToast");
-
             }
-
         }, 4000);
-
     </script>
 
-
 </body>
-
 </html>

@@ -28,11 +28,24 @@ namespace GsFashion.Repository.Repository
             return result;
         }
 
-        public async Task<IEnumerable<InventoryItemModel>> GetAllAsync()
+        public async Task<IEnumerable<InventoryItemDropDown>> GetAvailableInventoryItems()
+        {
+            var result = await _context.QueryAsync<InventoryItemDropDown>(
+                _itemSp,
+                new
+                {
+                    Type = SPEnum.InventoryItemDropDown.ToString()
+                },
+                commandType: CommandType.StoredProcedure);
+
+            return result;
+        }
+
+        public async Task<IEnumerable<InventoryItemModel>> GetAllAsync(string? searchingString = null)
         {
             var result = await _context.QueryAsync<InventoryItemModel>(
                 _itemSp,
-                new { Type = SPEnum.GetAll.ToString() },
+                new { Type = SPEnum.GetAll.ToString(), searching_string = searchingString },
                 commandType: CommandType.StoredProcedure);
             return result;
         }
@@ -46,7 +59,6 @@ namespace GsFashion.Repository.Repository
             return result;
         }
 
-        // usp_manage_inventory_items Insert returns TWO result sets: new_item_id, then Message/Status.
         public async Task<Response> InsertAsync(InventoryItemModel item)
         {
             using var multi = await _context.QueryMultipleAsync(
