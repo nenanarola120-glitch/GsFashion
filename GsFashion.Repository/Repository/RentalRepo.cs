@@ -3,6 +3,7 @@ using GsFashion.Repository.Contracts;
 using GsFashion.Repository.Dapper;
 using GsFashion.Repository.Enums;
 using GsFashion.Repository.Models.Common;
+using GsFashion.Repository.Models.InventoryItem;
 using GsFashion.Repository.Models.Menu;
 using GsFashion.Repository.Models.Rental;
 using System.Data;
@@ -41,7 +42,7 @@ namespace GsFashion.Repository.Repository
 
         public async Task<RentalModel?> GetByIdAsync(int rentalId)
         {
-            var result = await _context.QueryFirstOrDefaultAsync<RentalModel>(
+            using var multi = await _context.QueryMultipleAsync(
                 _rentalSp,
                 new
                 {
@@ -50,7 +51,15 @@ namespace GsFashion.Repository.Repository
                 },
                 commandType: CommandType.StoredProcedure);
 
-            return result;
+            var rental = await multi.ReadFirstOrDefaultAsync<RentalModel>();
+
+            if (rental is null)
+                return null;
+
+            rental.InventoryItemModels =
+                (await multi.ReadAsync<InventoryItemModel>()).ToList();
+
+            return rental;
         }
 
         #endregion

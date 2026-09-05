@@ -123,6 +123,8 @@ namespace GsFashion.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRentalBooking(RentalModel model)
         {
+            model.CustomerPhoneNumber = model.CustomerPhoneNumber?.Trim() ?? string.Empty;
+
             if (string.IsNullOrWhiteSpace(model.ItemIds))
             {
                 ModelState.AddModelError(nameof(model.ItemIds), "Please select at least one choli.");
@@ -136,6 +138,10 @@ namespace GsFashion.MVC.Controllers
             if (string.IsNullOrWhiteSpace(model.CustomerPhoneNumber))
             {
                 ModelState.AddModelError(nameof(model.CustomerPhoneNumber), "Customer phone number is required.");
+            }
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(model.CustomerPhoneNumber, "^[0-9]{10}$"))
+            {
+                ModelState.AddModelError(nameof(model.CustomerPhoneNumber), "Phone number must contain exactly 10 digits.");
             }
 
             if (!model.RentalStartDate.HasValue)
@@ -341,27 +347,27 @@ namespace GsFashion.MVC.Controllers
             }
 
             // Get all inventory items
-            var inventoryItems = await _inventoryItemService.GetAllAsync();
+            //var inventoryItems = await _inventoryItemService.GetAllAsync();
 
-            // Convert ItemIds "1,5,8" to a list of ints: 1, 5, 8
-            var selectedIds = rental.ItemIds?
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => int.TryParse(x, out int idValue) ? idValue : 0)
-                .Where(x => x > 0)
-                .ToList()
-                ?? new List<int>();
+            //// Convert ItemIds "1,5,8" to a list of ints: 1, 5, 8
+            //var selectedIds = rental.ItemIds?
+            //    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            //    .Select(x => int.TryParse(x, out int idValue) ? idValue : 0)
+            //    .Where(x => x > 0)
+            //    .ToList()
+            //    ?? new List<int>();
 
-            // Load selected inventory items
-            rental.InventoryItemModels = inventoryItems
-                .Where(x => selectedIds.Contains(x.ItemId))
-                .ToList();
+            //// Load selected inventory items
+            //rental.InventoryItemModels = inventoryItems
+            //    .Where(x => selectedIds.Contains(x.ItemId))
+            //    .ToList();
 
-            // Generate PDF
-            var pdf = _rentalBillPdfService.Generate(rental);
+            // Generate the PDF in memory. ASP.NET Core disposes the stream after sending the response.
+            var pdfStream = _rentalBillPdfService.Generate(rental);
 
             var fileName = $"Rental-Bill-{rental.RentalId:D5}.pdf";
 
-            return File(pdf, "application/pdf", fileName);
+            return File(pdfStream, "application/pdf", fileName);
         }
 
         #endregion

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: Arial,sans-serif;
+            color: #202020;
+            font-size: 10pt;
+            margin: 28px
+        }
+
+        .header {
+            border-bottom: 2px solid #432818;
+            padding-bottom: 12px
+        }
+
+        .logo {
+            max-height: 54px;
+            max-width: 160px
+        }
+
+        h1 {
+            color: #432818;
+            font-size: 22pt;
+            margin: 0
+        }
+
+        h2 {
+            color: #8a5a44;
+            font-size: 12pt;
+            margin: 4px 0 0
+        }
+
+        h3 {
+            color: #432818;
+            font-size: 11pt;
+            border-bottom: 1px solid #d6c2b7;
+            padding-bottom: 4px;
+            margin-top: 20px
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%
+        }
+
+        td, th {
+            padding: 7px;
+            border: 1px solid #d6c2b7
+        }
+
+        th {
+            background: #f2e9e4;
+            color: #432818;
+            text-align: left
+        }
+
+        .meta td, .customer td {
+            border: 0;
+            padding: 3px 0
+        }
+
+        .amount {
+            text-align: right
+        }
+
+        .summary {
+            width: 45%;
+            margin-left: auto;
+            margin-top: 14px
+        }
+
+            .summary td {
+                border: 0;
+                padding: 4px
+            }
+
+        .total td {
+            border-top: 2px solid #432818;
+            font-size: 11pt;
+            font-weight: bold
+        }
+
+        .footer {
+            margin-top: 28px;
+            text-align: center;
+            color: #6b5a50
+        }
+    </style>
+</head>
+<body>
+    <table class="header">
+        <tr>
+            <td>
+                <img class="logo" src="{{LOGO}}" height="70px" width="70px" />
+            </td>
+            <td style="border:0;text-align:right">
+                <h1>GS FASHION</h1>
+                <h2>CHOLI RENTAL BILL</h2>
+            </td>
+         </tr>
+    </table>
+    <table class="meta" style="margin-top:14px">
+        <tr>
+            <td><strong>Bill No:</strong> {{BILL_NUMBER}}</td>
+            <td style="text-align:right"><strong>Booking:</strong> {{BOOKING_DATE}}</td>
+        </tr>
+        <tr>
+            <td><strong>Rental Start:</strong> {{RENTAL_START_DATE}}</td>
+            <td style="text-align:right"><strong>Expected Return:</strong> {{EXPECTED_RETURN_DATE}}</td>
+        </tr>
+    </table>
+    <h3>CUSTOMER DETAILS</h3>
+    <table class="customer">
+        <tr>
+            <td><strong>Name:</strong> {{CUSTOMER_NAME}}</td>
+            <td><strong>Phone:</strong> {{CUSTOMER_PHONE}}</td>
+        </tr>
+        <tr>
+            <td><strong>Email:</strong> {{CUSTOMER_EMAIL}}</td>
+            <td><strong>Address:</strong> {{CUSTOMER_ADDRESS}}</td>
+        </tr>
+    </table>
+    <h3>RENTAL ITEMS ({{ITEM_COUNT}})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>SKU</th>
+                <th>Item</th>
+                <th class="amount">Rent</th>
+                <th class="amount">Deposit</th>
+                <th class="amount">Total</th>
+            </tr>
+        </thead>
+        <tbody>{{ITEM_ROWS}}</tbody>
+    </table>
+    <table class="summary">
+        <tr>
+            <td>Total Rent</td>
+            <td class="amount">{{TOTAL_RENT}}</td>
+        </tr>
+        <tr>
+            <td>Total Deposit</td>
+            <td class="amount">{{TOTAL_DEPOSIT}}</td>
+        </tr>
+        <tr>
+            <td>Discount</td>
+            <td class="amount">- {{DISCOUNT}}</td>
+        </tr>
+        <tr class="total">
+            <td>TOTAL AMOUNT</td>
+            <td class="amount">{{TOTAL_AMOUNT}}</td>
+        </tr>
+        <tr>
+            <td>Amount Paid</td>
+            <td class="amount">{{AMOUNT_PAID}}</td>
+        </tr>
+        <tr>
+            <td><strong>Balance</strong></td>
+            <td class="amount"><strong>{{BALANCE_AMOUNT}}</strong></td>
+        </tr>
+    </table>
+    <h3>NOTES</h3><p>{{NOTES}}</p><p class="footer">Thank you for choosing GS Fashion. Please keep this bill for your records.</p>
+</body>
+</html>

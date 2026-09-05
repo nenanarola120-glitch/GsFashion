@@ -9,15 +9,28 @@
     <a asp-action="AddItem" class="btn btn-primary">+ Add Item</a>
 </div>
 
+<form asp-action="GetAllItem" method="get" class="row g-2 mb-3">
+    <div class="col-sm-8 col-md-6 col-lg-4">
+        <label for="searchingString" class="visually-hidden">Search inventory</label>
+        <input id="searchingString" name="searchingString" class="form-control"
+               value="@Context.Request.Query["searchingString"]"
+               placeholder="Search by SKU, name, color, price, or status" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+        <a asp-action="GetAllItem" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
 <div class="table-responsive">
     <table class="table table-bordered table-hover align-middle">
         <thead class="table-light">
             <tr>
-                <th>Photo</th>
+                @* <th>Photo</th> *@
                 <th>SKU</th>
                 <th>Name</th>
                 <th>Category</th>
-                <th>Size</th>
+                @* <th>Size</th> *@
                 <th>Color</th>
                 <th>Rent/Day</th>
                 <th>Deposit</th>
@@ -39,7 +52,7 @@
                     data-purchasecost="@item.PurchaseCost.ToString("N2")"
                     data-status="@item.Status"
                     data-image="@item.ImageUrl">
-                    <td>
+                    @* <td>
                         @if (!string.IsNullOrEmpty(item.ImageUrl))
                         {
                             <img src="@item.ImageUrl" alt="@item.Name" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" />
@@ -48,11 +61,11 @@
                         {
                             <div class="bg-light text-muted d-flex align-items-center justify-content-center" style="width:48px;height:48px;border-radius:4px;font-size:0.65rem;">No image</div>
                         }
-                    </td>
+                    </td> *@
                     <td>@item.SkuCode</td>
                     <td>@item.Name</td>
                     <td>@item.CategoryName</td>
-                    <td>@item.Size</td>
+                    @* <td>@item.Size</td> *@
                     <td>@item.Color</td>
                     <td>@item.BaseRentalPrice.ToString("N2")</td>
                     <td>@item.SecurityDeposit.ToString("N2")</td>
