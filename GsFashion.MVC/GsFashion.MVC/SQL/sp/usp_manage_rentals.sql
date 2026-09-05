@@ -158,7 +158,26 @@ BEGIN
 
             WHILE @@FETCH_STATUS = 0
             BEGIN
-                IF EXISTS (SELECT 1 FROM inventory_items WHERE item_id = @CurrentItemId AND status = 'Available')
+                -- Recheck availability inside the transaction. The selection page performs
+                -- the same overlap check, but this prevents a second booking request from
+                -- reserving the item for the same dates after the page was loaded.
+                IF EXISTS
+                (
+                    SELECT 1
+                    FROM inventory_items i
+                    WHERE i.item_id = @CurrentItemId
+                      AND i.status = 'Available'
+                      AND NOT EXISTS
+                      (
+                          SELECT 1
+                          FROM rental_items ri
+                          INNER JOIN rentals r ON r.rental_id = ri.rental_id
+                          WHERE ri.item_id = i.item_id
+                            AND r.status <> 'Cancelled'
+                            AND r.rental_start_date <= @expected_return_date
+                            AND ISNULL(r.actual_return_date, r.expected_return_date) >= @rental_start_date
+                      )
+                )
                 BEGIN
                    SELECT @AgreedPrice = baserentalprice FROM inventory_items WHERE item_id = @CurrentItemId;
 
