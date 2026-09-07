@@ -1,10 +1,9 @@
-using System.Globalization;
-using System.Net;
 using GsFashion.Repository.Models.Rental;
 using HtmlRendererCore.PdfSharp;
 using Microsoft.AspNetCore.Hosting;
 using PdfSharp;
-
+using System.Globalization;
+using System.Net;
 namespace GsFashion.MVC.Services;
 
 /// <summary>Creates rental invoices from an editable HTML template and keeps the PDF in memory.</summary>
@@ -12,6 +11,7 @@ public class RentalBillPdfService
 {
     private readonly IWebHostEnvironment _environment;
     public RentalBillPdfService(IWebHostEnvironment environment) => _environment = environment;
+
 
     public MemoryStream Generate(RentalModel rental)
     {
@@ -33,11 +33,24 @@ public class RentalBillPdfService
         var totalAmount = rental.GrandTotal != 0 ? rental.GrandTotal : rental.TotalRentAmount + rental.SecurityDeposit + rental.LateFee + rental.DamageFee - rental.Discount;
         var values = new Dictionary<string, string>
         {
-            ["{{LOGO}}"] = GetLogoDataUri(), ["{{BILL_NUMBER}}"] = $"RENT-{rental.RentalId:D5}",
-            ["{{BOOKING_DATE}}"] = Date(rental.BookingDate, "dd MMM yyyy, hh:mm tt"), ["{{RENTAL_START_DATE}}"] = Date(rental.RentalStartDate, "dd MMM yyyy"), ["{{EXPECTED_RETURN_DATE}}"] = Date(rental.ExpectedReturnDate, "dd MMM yyyy"),
-            ["{{CUSTOMER_NAME}}"] = Encode($"{rental.CustomerFirstName} {rental.CustomerLastName}".Trim()), ["{{CUSTOMER_PHONE}}"] = Encode(rental.CustomerPhoneNumber), ["{{CUSTOMER_EMAIL}}"] = Encode(rental.CustomerEmail), ["{{CUSTOMER_ADDRESS}}"] = Encode(rental.CustomerAddress),
-            ["{{ITEM_COUNT}}"] = items.Count.ToString(CultureInfo.InvariantCulture), ["{{ITEM_ROWS}}"] = ItemRows(items),
-            ["{{TOTAL_RENT}}"] = Money(rental.TotalRentAmount), ["{{TOTAL_DEPOSIT}}"] = Money(rental.SecurityDeposit), ["{{DISCOUNT}}"] = Money(rental.Discount), ["{{TOTAL_AMOUNT}}"] = Money(totalAmount), ["{{AMOUNT_PAID}}"] = Money(rental.AmountPaid), ["{{BALANCE_AMOUNT}}"] = Money(rental.BalanceAmount), ["{{NOTES}}"] = Encode(rental.Notes)
+            ["{{LOGO}}"] = GetLogoDataUri(),
+            ["{{BILL_NUMBER}}"] = $"RENT-{rental.RentalId:D5}",
+            ["{{BOOKING_DATE}}"] = Date(rental.BookingDate, "dd MMM yyyy, hh:mm tt"),
+            ["{{RENTAL_START_DATE}}"] = Date(rental.RentalStartDate, "dd MMM yyyy"),
+            ["{{EXPECTED_RETURN_DATE}}"] = Date(rental.ExpectedReturnDate, "dd MMM yyyy"),
+            ["{{CUSTOMER_NAME}}"] = Encode($"{rental.CustomerFirstName} {rental.CustomerLastName}".Trim()),
+            ["{{CUSTOMER_PHONE}}"] = Encode(rental.CustomerPhoneNumber),
+            ["{{CUSTOMER_EMAIL}}"] = Encode(rental.CustomerEmail),
+            ["{{CUSTOMER_ADDRESS}}"] = Encode(rental.CustomerAddress),
+            ["{{ITEM_COUNT}}"] = items.Count.ToString(CultureInfo.InvariantCulture),
+            ["{{ITEM_ROWS}}"] = ItemRows(items),
+            ["{{TOTAL_RENT}}"] = Money(rental.TotalRentAmount),
+            ["{{TOTAL_DEPOSIT}}"] = Money(rental.SecurityDeposit),
+            ["{{DISCOUNT}}"] = Money(rental.Discount),
+            ["{{TOTAL_AMOUNT}}"] = Money(totalAmount),
+            ["{{AMOUNT_PAID}}"] = Money(rental.AmountPaid),
+            ["{{BALANCE_AMOUNT}}"] = Money(rental.BalanceAmount),
+            ["{{NOTES}}"] = Encode(rental.Notes)
         };
         foreach (var (token, value) in values) template = template.Replace(token, value, StringComparison.Ordinal);
         return template;
