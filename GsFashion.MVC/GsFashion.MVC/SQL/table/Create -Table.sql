@@ -51,7 +51,7 @@ CREATE TABLE rentals (
     rental_id INT IDENTITY(1,1) PRIMARY KEY,
 
     customer_id INT NOT NULL,
-
+    billNo varchar(max) not null,
     booking_date DATETIME NOT NULL DEFAULT GETDATE(),
 
     rental_start_date DATE NOT NULL,

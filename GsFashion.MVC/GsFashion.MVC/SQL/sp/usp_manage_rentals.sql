@@ -28,6 +28,7 @@ BEGIN
     BEGIN
         SELECT
             r.rental_id AS RentalId,
+            r.billNo,
             r.customer_id AS CustomerId,
             c.first_name AS FirstName,
             c.last_name AS LastName,
@@ -54,7 +55,7 @@ BEGIN
 
     ELSE IF @type = 'GetById'
     BEGIN
-        SELECT r.rental_id AS RentalId, r.customer_id AS CustomerId, c.first_name AS CustomerFirstName,
+        SELECT r.rental_id AS RentalId,r.billNo, r.customer_id AS CustomerId, c.first_name AS CustomerFirstName,
             c.last_name AS CustomerLastName,c.email AS CustomerEmail,c.address AS CustomerAddress,
             c.phone_number AS CustomerPhoneNumber,r.booking_date AS BookingDate,r.rental_start_date AS RentalStartDate,r.expected_return_date AS ExpectedReturnDate,r.actual_return_date AS ActualReturnDate,r.total_rent_amount AS TotalRentAmount,r.security_deposit AS SecurityDeposit,
             r.discount AS Discount,r.grand_total AS GrandTotal,r.amount_paid AS AmountPaid,
@@ -63,7 +64,13 @@ BEGIN
         INNER JOIN customers c ON r.customer_id = c.customer_id
         WHERE r.rental_id = @rental_id;
 		
-		select ii.sku_code AS SkuCode,ii.name AS Name,ii.baserentalprice AS BaseRentalPrice,ii.security_deposit AS SecurityDeposit from inventory_items ii inner join rental_items ri on ii.item_id=ri.item_id where ri.rental_id= @rental_id;
+		SELECT ii.item_id AS ItemId, ii.sku_code AS SkuCode, ii.name AS Name,
+               c.name AS CategoryName, ii.size AS Size, ii.color AS Color,
+               ii.baserentalprice AS BaseRentalPrice, ii.security_deposit AS SecurityDeposit
+        FROM inventory_items ii
+        INNER JOIN rental_items ri ON ii.item_id = ri.item_id
+        INNER JOIN categories c ON c.category_id = ii.category_id
+        WHERE ri.rental_id = @rental_id;
 
         RETURN;
     END
@@ -130,15 +137,19 @@ BEGIN
                 SET @customer_id = SCOPE_IDENTITY();
             END
 
+            --get total count or rentals count add like GSFashion-10
+            DECLARE @totalRowOfcount int = (select count(*) from rentals);  
+             DECLARE @RentalCode NVARCHAR(50) = CONCAT('GSFashion-',@totalRowOfcount);
+
             INSERT INTO rentals
                 (customer_id, booking_date, rental_start_date, expected_return_date, actual_return_date,
                  total_rent_amount, security_deposit, discount, grand_total,
-                 amount_paid, balance_amount, status, notes)
+                 amount_paid, balance_amount, status, notes,billNo)
             VALUES
                 (@customer_id, GETDATE(), @rental_start_date, @expected_return_date, NULL,
                  ISNULL(@total_rent_amount, 0), ISNULL(@security_deposit, 0), ISNULL(@discount, 0),
                  ISNULL(@grand_total, 0), ISNULL(@amount_paid, 0), ISNULL(@balance_amount, 0),
-                 ISNULL(@status, 'Booked'), @notes);
+                 ISNULL(@status, 'Booked'), @notes,@RentalCode);
 
             DECLARE @NewRentalId INT = SCOPE_IDENTITY();
 
@@ -212,7 +223,7 @@ BEGIN
             --    SELECT CONCAT('Rental booked with ', @InsertedCount, ' item(s). Skipped unavailable item id(s): ',
             --                   LEFT(@SkippedItems, LEN(@SkippedItems) - 1)) AS Message, 1 AS Status, @NewRentalId AS RentalId;
             --ELSE
-                SELECT CONCAT(@first_name,@last_name,'Your choli is booked successfully') AS Message, 1 AS Status, @NewRentalId AS Id;
+                SELECT CONCAT(@first_name, ' ' ,@last_name,'Your choli is booked successfully.bill no. ',@RentalCode) AS Message, 1 AS Status, @NewRentalId AS Id;
         END TRY
         BEGIN CATCH
             IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

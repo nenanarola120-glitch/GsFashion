@@ -1,3 +1,18 @@
+
+select * from admin_users;
+select * from categories;
+select * from customers;
+select * from inventory_items;
+select * from menus;
+select * from payments;
+select * from rental_items;
+select * from rentals;
+select * from role_menu_permissions;
+select * from roles;
+
+--alter table rentals
+--add  billNo varchar(max) null;
+
 --select * from role_menu_permissions;
 
 --select * from menus;
@@ -71,21 +86,19 @@
 
   --insert into roles values('Customer','dddd',1,GETDATE());
 
-  select * from customers where customer_id=6;
-  select * from rentals;
-  select * from inventory_items;
-  select * from rental_items;
+  --select * from customers where customer_id=6;
+  --select * from rentals;
+  --select * from inventory_items;
+  --select * from rental_items;
 
-  select ii.sku_code AS SkuCode,ii.name AS Name,ii.baserentalprice AS BaseRentalPrice,ii.security_deposit AS SecurityDeposit from inventory_items ii inner join rental_items ri on ii.item_id=ri.item_id where ri.rental_id=2;
+  --select ii.sku_code AS SkuCode,ii.name AS Name,ii.baserentalprice AS BaseRentalPrice,ii.security_deposit AS SecurityDeposit from inventory_items ii inner join rental_items ri on ii.item_id=ri.item_id where ri.rental_id=2;
 
-  DECLARE @rental_id int = 3;
-  select * from rentals WHERE rental_id = @rental_id;
-  select  * from inventory_items WHERE item_id in (1);
+  --DECLARE @rental_id int = 3;
+  --select * from rentals WHERE rental_id = @rental_id;
+  --select  * from inventory_items WHERE item_id in (1);
 
-  select * from rental_items where rental_id=@rental_id
+  --select * from rental_items where rental_id=@rental_id
 
-  select * from rentals;
+  --select * from rentals;
 
-  add report like get All Available report Choli  from data and to date wise and one drop down is C-15(choliname) wise also display only to check choli is availvable in fomr date to date wise with choli name also in dropdown one serch input to serch choli name and code wise serch
-
-
+  --add report like get All Available report Choli  from data and to date wise and one drop down is C-15(choliname) wise also display only to check choli is availvable in fomr date to date wise with choli name also in dropdown one serch input to serch choli name and code wise serch

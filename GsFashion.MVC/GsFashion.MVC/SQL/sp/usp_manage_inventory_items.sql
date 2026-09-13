@@ -50,35 +50,64 @@ BEGIN
         END
         ELSE IF @type = 'GetAvailableForRental'
         BEGIN
-            IF @rental_start_date IS NULL OR @expected_return_date IS NULL OR @expected_return_date < @rental_start_date
+            IF @rental_start_date IS NOT NULL
+               AND (@expected_return_date IS NULL OR @expected_return_date < @rental_start_date)
             BEGIN
                 SELECT 'A valid rental date range is required.' AS Message, 0 AS Status;
                 RETURN;
             END
 
-            SELECT i.item_id AS ItemId, i.sku_code AS SkuCode, i.name AS Name,
-                   i.category_id AS CategoryId, c.name AS CategoryName, i.size AS Size,
-                   i.color AS Color, i.baserentalprice AS BaseRentalPrice,
-                   i.security_deposit AS SecurityDeposit, i.purchase_cost AS PurchaseCost,
-                   i.status AS Status, i.image_url AS ImageUrl, i.created_at AS CreatedAt
+            IF @rental_start_date IS NULL AND @expected_return_date IS NOT NULL
+            BEGIN
+                SELECT 'A valid rental date range is required.' AS Message, 0 AS Status;
+                RETURN;
+            END
+
+            -- A blank status means "All statuses".  The report defaults this value to Available.
+            SELECT
+                i.item_id          AS ItemId,
+                i.sku_code         AS SkuCode,
+                i.name             AS Name,
+                i.category_id      AS CategoryId,
+                c.name             AS CategoryName,
+                i.size             AS Size,
+                i.color            AS Color,
+                i.baserentalprice  AS BaseRentalPrice,
+                i.security_deposit AS SecurityDeposit,
+                i.purchase_cost    AS PurchaseCost,
+                i.status           AS Status,
+                i.image_url        AS ImageUrl,
+                i.created_at       AS CreatedAt
             FROM inventory_items i
             INNER JOIN categories c ON c.category_id = i.category_id
             WHERE ISNULL(i.is_deleted, 0) = 0
-              AND i.status = 'Available'
+              AND (@item_id IS NULL OR i.item_id = @item_id)
+              AND (NULLIF(LTRIM(RTRIM(@status)), '') IS NULL OR i.status = @status)
               AND (NULLIF(LTRIM(RTRIM(@searching_string)), '') IS NULL
                    OR i.sku_code LIKE '%' + @searching_string + '%'
                    OR i.name LIKE '%' + @searching_string + '%'
                    OR c.name LIKE '%' + @searching_string + '%'
                    OR i.color LIKE '%' + @searching_string + '%')
-              AND NOT EXISTS
+              -- When a date range is provided, return only cholis that can be
+              -- rented for the complete range. The same check works for either
+              -- all cholis or one selected @item_id.
+              AND
               (
-                  SELECT 1
-                  FROM rental_items ri
-                  INNER JOIN rentals r ON r.rental_id = ri.rental_id
-                  WHERE ri.item_id = i.item_id
-                    AND r.status <> 'Cancelled'
-                    AND r.rental_start_date <= @expected_return_date
-                    AND ISNULL(r.actual_return_date, r.expected_return_date) >= @rental_start_date
+                  @rental_start_date IS NULL
+                  OR
+                  (
+                      i.status = 'Available'
+                      AND NOT EXISTS
+                      (
+                          SELECT 1
+                          FROM rental_items ri
+                          INNER JOIN rentals r ON r.rental_id = ri.rental_id
+                          WHERE ri.item_id = i.item_id
+                            AND r.status <> 'Cancelled'
+                            AND r.rental_start_date <= @expected_return_date
+                            AND ISNULL(r.actual_return_date, r.expected_return_date) >= @rental_start_date
+                      )
+                  )
               )
             ORDER BY i.item_id;
             RETURN;

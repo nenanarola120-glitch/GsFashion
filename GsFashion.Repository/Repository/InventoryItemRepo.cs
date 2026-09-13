@@ -56,7 +56,7 @@ namespace GsFashion.Repository.Repository
                 _itemSp,
                 new
                 {
-                    Type = "GetAvailableForRental",
+                    Type = SPEnum.GetAvailableForRental.ToString(),
                     rental_start_date = rentalStartDate.Date,
                     expected_return_date = expectedReturnDate.Date,
                     searching_string = searchingString
