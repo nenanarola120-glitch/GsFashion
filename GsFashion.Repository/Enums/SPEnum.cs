@@ -9,7 +9,9 @@
         Update,
         Delete,
         CustomerDropDown,
-        InventoryItemDropDown
+        InventoryItemDropDown,
+        GetAvailableForRental,
+        GetBookedCholiReport
 
     }
 }

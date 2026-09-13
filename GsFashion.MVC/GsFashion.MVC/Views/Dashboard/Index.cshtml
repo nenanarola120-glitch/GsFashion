@@ -1,34 +1,57 @@
+@using System.Text.Json
+@model GsFashion.MVC.Models.DashboardViewModel
+
 @{
     ViewData["Title"] = "Dashboard";
-    Layout = "_Layout";
+    var chartLabels = JsonSerializer.Serialize(Model.MonthlyPaidAmounts.Select(item => item.Label));
+    var chartAmounts = JsonSerializer.Serialize(Model.MonthlyPaidAmounts.Select(item => item.Amount));
+    var cardColors = new[] { "primary", "success", "info", "warning", "secondary" };
 }
 
-<h3>Welcome, @User.FindFirst("FullName")?.Value</h3>
-<p class="text-muted">Your role: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
-
-<div class="row mt-4">
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small">Active Rentals</div>
-            <div class="fs-3 fw-bold">--</div>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Welcome, @User.FindFirst("FullName")?.Value</h3>
+        <p class="text-muted mb-0">Today's rental activity at a glance.</p>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small">Inventory Items</div>
-            <div class="fs-3 fw-bold">--</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small">Customers</div>
-            <div class="fs-3 fw-bold">--</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small">Overdue Returns</div>
-            <div class="fs-3 fw-bold">--</div>
-        </div>
-    </div>
+    <a asp-controller="Report" asp-action="BookedCholiReport" class="btn btn-outline-primary">View Booking Report</a>
 </div>
+
+<div class="row g-3 mb-4">
+    @for (var index = 0; index < Model.Metrics.Count(); index++)
+    {
+        var metric = Model.Metrics.ElementAt(index);
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase">@metric.Label</div>
+                    <div class="fs-2 fw-bold text-@cardColors[index % cardColors.Length]">@metric.Count</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white"><h5 class="mb-0">Month-wise Paid Amount Ratio</h5></div>
+    <div class="card-body"><div style="height: 340px; position: relative;"><canvas id="monthlyPaidAmountChart"></canvas></div></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        new Chart(document.getElementById('monthlyPaidAmountChart'), {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(chartLabels),
+                datasets: [{
+                    label: 'Paid Amount', data: @Html.Raw(chartAmounts),
+                    backgroundColor: ['#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#6f42c1', '#fd7e14'], borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { tooltip: { callbacks: { label: context => `${context.label}: ₹ ${context.parsed.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` } } }
+            }
+        });
+    </script>
+}

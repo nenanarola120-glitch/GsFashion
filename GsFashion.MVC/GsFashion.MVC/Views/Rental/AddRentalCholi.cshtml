@@ -90,10 +90,12 @@
                 <h5 class="mb-0"><i class="bi bi-grid-3x3-gap text-primary me-2"></i>All Inventory Items</h5>
                 <form asp-action="AddRentalCholi" method="get" class="row g-2 w-100 justify-content-md-end">
                     <div class="col-12 col-md-auto">
-                        <input type="date" name="rentalStartDate" value="@fromDate" class="form-control" required aria-label="From date" />
+                        <input type="hidden" name="editRentalId" value="@(Model.RentalId > 0 ? Model.RentalId : null)" />
+                        <input type="hidden" name="itemIds" value="@Model.ItemIds" />
+                        <input type="date" name="rentalStartDate" value="@fromDate" class="form-control" required aria-label="From date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                     </div>
                     <div class="col-12 col-md-auto">
-                        <input type="date" name="expectedReturnDate" value="@toDate" class="form-control" required aria-label="To date" />
+                        <input type="date" name="expectedReturnDate" value="@toDate" class="form-control" required aria-label="To date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                     </div>
                     <div class="col-12 col-md-auto">
                     <input type="search"
@@ -221,6 +223,7 @@
     <input type="hidden" name="itemIds" id="selectedItemIds" />
     <input type="hidden" name="rentalStartDate" value="@fromDate" />
     <input type="hidden" name="expectedReturnDate" value="@toDate" />
+    <input type="hidden" name="editRentalId" value="@(Model.RentalId > 0 ? Model.RentalId : null)" />
 </form>
 
 @section Scripts {

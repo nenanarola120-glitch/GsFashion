@@ -14,6 +14,7 @@ namespace GsFashion.Repository.Extension
             services.AddTransient<IRoleMenuPermissionRepository, RoleMenuPermissionRepo>();
             services.AddScoped<ICategoryRepository, CategoryRepo>();
             services.AddScoped<IInventoryItemRepository, InventoryItemRepo>();
+            services.AddScoped<IReportRepository, ReportRepo>();
             services.AddTransient<IRentalRepository,RentalRepo>();
             services.AddTransient<IRentalPaymentRepository, RentalPaymentRepo>();
             //services.AddTransient<,>();

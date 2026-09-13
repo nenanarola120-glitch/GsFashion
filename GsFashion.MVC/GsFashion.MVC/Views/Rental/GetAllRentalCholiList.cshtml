@@ -22,12 +22,12 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
+                            @* <th>Bill No</th> *@
                             <th>Customer</th>
                             <th>Phone</th>
-                            <th>Booking Date</th>
                             <th>Rental Start</th>
                             <th>Expected Return</th>
-                            <th>Grand Total</th>
+                            @* <th>Grand Total</th> *@
                             <th>Paid</th>
                             <th>Balance</th>
                             <th>Status</th>
@@ -41,12 +41,12 @@
                             {
                                 <tr>
                                     <td><strong>#@item.RentalId</strong></td>
+                                    @* <td>@item.</td> *@
                                     <td>@item.FirstName @item.LastName</td>
                                     <td>@item.PhoneNumber</td>
-                                    <td>@item.BookingDate?.ToString("dd-MM-yyyy")</td>
                                     <td>@item.RentalStartDate?.ToString("dd-MM-yyyy")</td>
                                     <td>@item.ExpectedReturnDate?.ToString("dd-MM-yyyy")</td>
-                                    <td>₹ @item.GrandTotal.ToString("N2")</td>
+                                    @* <td>₹ @item.GrandTotal.ToString("N2")</td> *@
                                     <td>₹ @item.AmountPaid.ToString("N2")</td>
                                     <td>₹ @item.BalanceAmount.ToString("N2")</td>
                                     <td>

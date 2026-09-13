@@ -10,18 +10,21 @@ namespace GsFashion.MVC.Controllers
         private readonly IRentalService _rentalService;
         private readonly IInventoryItemService _inventoryItemService;
         private readonly IRentalPaymentService _rentalPaymentService;
+        private readonly IReportService _reportService;
         private readonly RentalBillPdfService _rentalBillPdfService;
 
         public RentalController(
             IRentalService rentalService,
             IInventoryItemService inventoryItemService,
             IRentalPaymentService rentalPaymentService,
-            RentalBillPdfService rentalBillPdfService)
+            RentalBillPdfService rentalBillPdfService,
+            IReportService reportService)
         {
             _rentalService = rentalService;
             _inventoryItemService = inventoryItemService;
             _rentalPaymentService = rentalPaymentService;
             _rentalBillPdfService = rentalBillPdfService;
+            _reportService = reportService;
         }
 
         #region Get All
@@ -204,23 +207,22 @@ namespace GsFashion.MVC.Controllers
 
             var result = await _rentalService.InsertAsync(model);
 
+            if (result.Status == 0)
+            {
+                TempData["Error"] = result.Message;
+                await LoadSelectedInventory(model);
+                return View("AddRentalBooking", model);
+            }
             if (result.Status == 1)
             {
                 TempData["Success"] = result.Message;
-
                 if (result.Id.HasValue)
                 {
                     return RedirectToAction(nameof(RentalBill), new { id = result.Id.Value });
                 }
-
                 return RedirectToAction(nameof(GetAllRentalCholiList));
             }
-
-            TempData["Error"] = result.Message;
-
-            await LoadSelectedInventory(model);
-
-            return View("AddRentalBooking", model);
+            return RedirectToAction(nameof(GetAllRentalCholiList));
         }
 
         #endregion
@@ -290,6 +292,8 @@ namespace GsFashion.MVC.Controllers
                 TempData["Error"] = "Rental booking not found.";
                 return RedirectToAction(nameof(GetAllRentalCholiList));
             }
+
+            rental.ItemIds = string.Join(",", rental.InventoryItemModels.Select(item => item.ItemId));
 
             return View(rental);
         }
@@ -394,7 +398,7 @@ namespace GsFashion.MVC.Controllers
             // Generate the PDF in memory. ASP.NET Core disposes the stream after sending the response.
             var pdfStream = _rentalBillPdfService.Generate(rental);
 
-            var fileName = $"Rental-Bill-{rental.RentalId:D5}.pdf";
+            var fileName = $"{rental.BillNo}.pdf";
 
             return File(pdfStream, "application/pdf", fileName);
         }

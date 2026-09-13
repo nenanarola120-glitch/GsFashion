@@ -17,6 +17,7 @@ namespace GsFashion.Service.Extenstion
             services.AddTransient<IAdminUserService , AdminUserService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IInventoryItemService, InventoryItemService>();
+            services.AddScoped<IReportService, ReportService>();
             services.AddTransient<IRentalService,RentalService>();
             services.AddTransient<IRentalPaymentService, RentalPaymentService>();
             services.AddScoped<RentalBillPdfService>();

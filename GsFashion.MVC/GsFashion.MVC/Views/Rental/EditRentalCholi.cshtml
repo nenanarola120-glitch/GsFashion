@@ -18,6 +18,39 @@
         </a>
     </div>
 
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Selected Choli</h5>
+                <small class="text-muted">Remove a choli to cancel only that rental item when you update.</small>
+            </div>
+            <span id="selectedItemCount" class="badge bg-primary">@Model.InventoryItemModels.Count() Item(s)</span>
+        </div>
+        <div class="card-body">
+            <div id="selectedItemsContainer" class="row g-3">
+                @foreach (var item in Model.InventoryItemModels)
+                {
+                    <div class="col-md-6 col-lg-4" data-item-container="@item.ItemId">
+                        <div class="border rounded p-3 bg-light h-100 d-flex justify-content-between gap-3">
+                            <div>
+                                <strong>@item.SkuCode</strong>
+                                <div>@item.Name</div>
+                                <small class="text-muted d-block">@(item.CategoryName ?? "-") | Size: @(item.Size ?? "-") | Color: @(item.Color ?? "-")</small>
+                                <small class="text-muted">Rent: ₹ @item.BaseRentalPrice.ToString("0.00") | Deposit: ₹ @item.SecurityDeposit.ToString("0.00")</small>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-item" data-id="@item.ItemId" title="Remove this choli">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div id="noItemsMessage" class="alert alert-warning mb-0 @(Model.InventoryItemModels.Any() ? "d-none" : "")">
+                At least one choli must remain in this rental.
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white">
             <h5 class="mb-0">Rental Information</h5>
@@ -27,6 +60,8 @@
             <form asp-action="EditRentalCholi" method="post">
                 @Html.AntiForgeryToken()
                 <input asp-for="RentalId" type="hidden" />
+                <input asp-for="CustomerId" type="hidden" />
+                <input asp-for="ItemIds" type="hidden" id="ItemIdsHidden" />
 
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -34,17 +69,8 @@
 
                     <!-- Customer -->
                     <div class="col-md-6">
-                        <label asp-for="CustomerId" class="form-label">Customer</label>
-                        <select asp-for="CustomerId" class="form-select">
-                            <option value="">-- Select Customer --</option>
-                            @if (customers != null)
-                            {
-                                foreach (var customer in customers)
-                                {
-                                    <option value="@customer.Id">@customer.Name</option>
-                                }
-                            }
-                        </select>
+                        <label asp-for="CustomerId" class="form-label">Customer : @Model.CustomerFirstName @Model.CustomerLastName</label>
+                       
                     </div>
 
                     <!-- Start -->
@@ -69,15 +95,6 @@
                             <option value="Overdue">Overdue</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
-                    </div>
-
-                    <!-- Items -->
-                    <div class="col-md-12">
-                        <label asp-for="ItemIds" class="form-label">Inventory Item IDs</label>
-                        <input asp-for="ItemIds" class="form-control" placeholder="Example: 1,2,5" />
-                        <div class="form-text">
-                            Enter comma-separated inventory item IDs.
-                        </div>
                     </div>
 
                     <!-- Condition -->
@@ -152,4 +169,62 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const itemIdsHidden = document.getElementById('ItemIdsHidden');
+        const selectedItemsContainer = document.getElementById('selectedItemsContainer');
+        const noItemsMessage = document.getElementById('noItemsMessage');
+        const selectedItemCount = document.getElementById('selectedItemCount');
+
+        function selectedItemIds() {
+            return itemIdsHidden.value.split(',').filter(id => id.trim() !== '');
+        }
+
+        function refreshSelectedItemState() {
+            const count = selectedItemIds().length;
+            selectedItemCount.textContent = `${count} Item(s)`;
+            noItemsMessage.classList.toggle('d-none', count > 0);
+        }
+
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', function () {
+                const itemId = this.dataset.id;
+                const ids = selectedItemIds().filter(id => id !== itemId);
+
+                if (ids.length === 0) {
+                    alert('A rental must contain at least one choli. Use Cancel Rental to cancel the complete booking.');
+                    return;
+                }
+
+                itemIdsHidden.value = ids.join(',');
+                document.querySelector(`[data-item-container="${itemId}"]`)?.remove();
+                refreshSelectedItemState();
+            });
+        });
+
+        // A changed rental period needs a fresh availability selection. Keep the
+        // current Choli IDs so they remain selected on the Add Rental Choli page.
+        const startDate = document.getElementById('RentalStartDate');
+        const returnDate = document.getElementById('ExpectedReturnDate');
+        const originalStartDate = startDate.value;
+        const originalReturnDate = returnDate.value;
+
+        function changeDatesAndSelectCholi() {
+            if (!startDate.value || !returnDate.value ||
+                (startDate.value === originalStartDate && returnDate.value === originalReturnDate)) {
+                return;
+            }
+
+            const query = new URLSearchParams({
+                itemIds: itemIdsHidden.value,
+                rentalStartDate: startDate.value,
+                expectedReturnDate: returnDate.value,
+                editRentalId: '@Model.RentalId'
+            });
+            window.location.href = '@Url.Action("AddRentalCholi", "Rental")' + '?' + query.toString();
+        }
+
+        startDate.addEventListener('change', changeDatesAndSelectCholi);
+        returnDate.addEventListener('change', changeDatesAndSelectCholi);
+        refreshSelectedItemState();
+    </script>
 }

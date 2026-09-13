@@ -34,7 +34,7 @@ public class RentalBillPdfService
         var values = new Dictionary<string, string>
         {
             ["{{LOGO}}"] = GetLogoDataUri(),
-            ["{{BILL_NUMBER}}"] = $"RENT-{rental.RentalId:D5}",
+            ["{{BILL_NUMBER}}"] = $"{rental.BillNo:D5}",
             ["{{BOOKING_DATE}}"] = Date(rental.BookingDate, "dd MMM yyyy, hh:mm tt"),
             ["{{RENTAL_START_DATE}}"] = Date(rental.RentalStartDate, "dd MMM yyyy"),
             ["{{EXPECTED_RETURN_DATE}}"] = Date(rental.ExpectedReturnDate, "dd MMM yyyy"),

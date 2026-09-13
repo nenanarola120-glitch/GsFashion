@@ -5,6 +5,7 @@ namespace GsFashion.Repository.Models.Rental
     public class RentalModel
     {
         public int RentalId { get; set; }
+        public string? BillNo { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }

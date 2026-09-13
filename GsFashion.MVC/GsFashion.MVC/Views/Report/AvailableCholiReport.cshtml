@@ -1,0 +1,115 @@
+﻿@model GsFashion.MVC.Models.AvailableCholiReportViewModel
+
+@{
+    ViewData["Title"] = "All Available Choli";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">All Available Choli</h3>
+            <p class="text-muted mb-0">Check availability by date range, choli, code/name, or status.</p>
+        </div>
+        <a asp-controller="Rental" asp-action="AddRentalCholi" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Book a Choli
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form asp-action="AvailableCholiReport" method="get" class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label asp-for="FromDate" class="form-label">From Date</label>
+                    <input asp-for="FromDate" type="date" class="form-control" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label asp-for="ToDate" class="form-label">To Date</label>
+                    <input asp-for="ToDate" type="date" class="form-control" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label asp-for="ItemId" class="form-label">Choli Name</label>
+                    <select asp-for="ItemId" class="form-select">
+                        <option value="">All cholis</option>
+                        @foreach (var choli in Model.CholiOptions)
+                        {
+                            <option value="@choli.ItemId">@choli.SkuCode - @choli.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label asp-for="SearchTerm" class="form-label">Search Choli</label>
+                    <input asp-for="SearchTerm" type="search" class="form-control" placeholder="Search code or choli name" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label asp-for="Status" class="form-label">Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="">All statuses</option>
+                        @foreach (var itemStatus in Model.Statuses)
+                        {
+                            <option value="@itemStatus">@itemStatus</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Apply Filter</button>
+                    <a asp-action="AvailableCholiReport" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+            @if (Model.FromDate.HasValue)
+            {
+                <small class="d-block text-muted mt-3"><i class="bi bi-info-circle"></i> Only cholis available from @Model.FromDate.Value.ToString("dd-MM-yyyy") to @Model.ToDate!.Value.ToString("dd-MM-yyyy") are shown.</small>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Choli List</h5>
+            <span class="badge bg-primary rounded-pill">@Model.Items.Count() item(s)</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Choli</th>
+                            <th>Category</th>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Rent</th>
+                            <th>Deposit</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items.Any())
+                        {
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.SkuCode</td>
+                                    <td>@item.Name</td>
+                                    <td>@(item.CategoryName ?? "-")</td>
+                                    <td>@(item.Size ?? "-")</td>
+                                    <td>@(item.Color ?? "-")</td>
+                                    <td>₹ @item.BaseRentalPrice.ToString("N2")</td>
+                                    <td>₹ @item.SecurityDeposit.ToString("N2")</td>
+                                    <td><span class="badge @(item.Status == "Available" ? "bg-success" : "bg-secondary")">@item.Status</span></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>No choli found for the selected filters.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
