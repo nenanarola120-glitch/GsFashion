@@ -23,13 +23,15 @@ namespace GsFashion.Repository.Repository
 
         #region Get All
 
-        public async Task<IEnumerable<RentalModel>> GetAllAsync()
+        public async Task<IEnumerable<RentalModel>> GetAllAsync(string? searchingString = null, string? status = null)
         {
             var result = await _context.QueryAsync<RentalModel>(
                 _rentalSp,
                 new
                 {
-                    Type = SPEnum.GetAll.ToString()
+                    Type = SPEnum.GetAll.ToString(),
+                    searching_string = searchingString,
+                    status
                 },
                 commandType: CommandType.StoredProcedure);
 

@@ -14,6 +14,7 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_manage_rentals]
     @notes NVARCHAR(MAX) = NULL,
     @item_ids NVARCHAR(MAX) = NULL,       -- comma-separated inventory_items.item_id list
     @condition_out NVARCHAR(MAX) = NULL,   -- applied to newly added rental_item rows
+	 @searching_string NVARCHAR(150) = NULL,
 	 @first_name NVARCHAR(100) = NULL,
     @last_name NVARCHAR(100) = NULL,
     @phone_number NVARCHAR(20) = NULL,
@@ -48,7 +49,13 @@ BEGIN
             r.created_at AS CreatedAt
         FROM rentals r
         INNER JOIN customers c ON r.customer_id = c.customer_id
-        --WHERE r.status <> 'Cancelled'
+        WHERE (NULLIF(LTRIM(RTRIM(@searching_string)), '') IS NULL
+               OR c.first_name LIKE '%' + @searching_string + '%'
+               OR c.last_name LIKE '%' + @searching_string + '%'
+               OR CONCAT(c.first_name, ' ', c.last_name) LIKE '%' + @searching_string + '%'
+               OR c.phone_number LIKE '%' + @searching_string + '%'
+               OR r.billNo LIKE '%' + @searching_string + '%')
+          AND (NULLIF(LTRIM(RTRIM(@status)), '') IS NULL OR r.status = @status)
         ORDER BY r.rental_id DESC;
         RETURN;
     END
@@ -66,7 +73,8 @@ BEGIN
 		
 		SELECT ii.item_id AS ItemId, ii.sku_code AS SkuCode, ii.name AS Name,
                c.name AS CategoryName, ii.size AS Size, ii.color AS Color,
-               ii.baserentalprice AS BaseRentalPrice, ii.security_deposit AS SecurityDeposit
+               ii.baserentalprice AS BaseRentalPrice, ii.security_deposit AS SecurityDeposit,
+               ii.image_url AS ImageUrl
         FROM inventory_items ii
         INNER JOIN rental_items ri ON ii.item_id = ri.item_id
         INNER JOIN categories c ON c.category_id = ii.category_id

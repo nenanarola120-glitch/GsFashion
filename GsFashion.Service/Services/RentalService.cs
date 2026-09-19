@@ -16,9 +16,9 @@ namespace GsFashion.Service.Service
         }
 
         #region Get All
-        public async Task<IEnumerable<RentalModel>> GetAllAsync()
+        public async Task<IEnumerable<RentalModel>> GetAllAsync(string? searchingString = null, string? status = null)
         {
-            return await _rentalRepository.GetAllAsync();
+            return await _rentalRepository.GetAllAsync(searchingString, status);
         }
         #endregion
 
