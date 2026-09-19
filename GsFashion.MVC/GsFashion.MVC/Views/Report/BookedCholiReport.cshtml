@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "Booked Choli Report";
+    var choliGroups = Model.Items
+        .GroupBy(item => new { item.ItemId, item.SkuCode, item.Name })
+        .OrderByDescending(group => group.Count())
+        .ThenBy(group => group.Key.SkuCode)
+        .ToList();
 }
 
 <div class="container-fluid">
@@ -47,27 +52,40 @@
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Bookings from @Model.FromDate.Value.ToString("dd-MM-yyyy") to @Model.ToDate!.Value.ToString("dd-MM-yyyy")</h5>
-                <span class="badge bg-primary rounded-pill">@Model.Items.Sum(item => item.BookingCount) booking(s)</span>
+                <span class="badge bg-primary rounded-pill">@Model.Items.Count() booking(s)</span>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light"><tr><th>SKU</th><th>Choli</th><th>Times Booked</th></tr></thead>
-                        <tbody>
-                        @if (Model.Items.Any())
-                        {
-                            @foreach (var item in Model.Items)
-                            {
-                                <tr><td class="fw-semibold">@item.SkuCode</td><td>@item.Name</td><td>@item.BookingCount</td></tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr><td colspan="3" class="text-center py-5 text-muted">No choli bookings found for the selected dates.</td></tr>
-                        }
-                        </tbody>
-                    </table>
-                </div>
+            <div class="card-body">
+                @if (choliGroups.Any())
+                {
+                    @foreach (var choliGroup in choliGroups)
+                    {
+                        <div class="border rounded-3 mb-3 overflow-hidden">
+                            <div class="bg-light px-3 py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-semibold">@choliGroup.Key.SkuCode</span>
+                                    <span class="text-muted mx-1">—</span>
+                                    <span>@choliGroup.Key.Name</span>
+                                </div>
+                                <span class="badge bg-primary">@choliGroup.Count() booking(s)</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead><tr><th class="ps-3">Bill No.</th><th>Customer Name</th><th>Mobile Number</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var booking in choliGroup)
+                                        {
+                                            <tr><td class="ps-3 fw-semibold">@booking.BillNo</td><td>@booking.CustomerName</td><td>@booking.MobileNumber</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">No choli bookings found for the selected dates.</div>
+                }
             </div>
         </div>
     }

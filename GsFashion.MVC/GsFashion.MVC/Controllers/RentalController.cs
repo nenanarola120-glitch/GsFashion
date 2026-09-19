@@ -30,10 +30,22 @@ namespace GsFashion.MVC.Controllers
         #region Get All
 
         [HttpGet]
-        public async Task<IActionResult> GetAllRentalCholiList()
+        public async Task<IActionResult> GetAllRentalCholiList(string? searchingString = null, string? status = "Booked")
         {
-            var result = await _rentalService.GetAllAsync();
+            ViewBag.SearchingString = searchingString;
+            ViewBag.Status = status;
+            var result = await _rentalService.GetAllAsync(searchingString, status);
             return View(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RentalItemsModal(int id)
+        {
+            var rental = await _rentalService.GetByIdAsync(id);
+            if (rental is null)
+                return NotFound();
+
+            return PartialView("_RentalItemsModal", rental);
         }
 
         #endregion

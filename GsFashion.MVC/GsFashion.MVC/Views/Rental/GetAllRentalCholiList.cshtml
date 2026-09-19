@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Rentals";
+    var searchingString = ViewBag.SearchingString as string ?? string.Empty;
+    var selectedStatus = ViewBag.Status as string ?? string.Empty;
 }
 
 <div class="container-fluid">
@@ -17,6 +19,26 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
+            <form asp-action="GetAllRentalCholiList" method="get" class="row g-2 align-items-end mb-4">
+                <div class="col-12 col-md-5">
+                    <label class="form-label" for="searchingString">Search</label>
+                    <input id="searchingString" name="searchingString" value="@searchingString" class="form-control" placeholder="Customer name, phone number, or bill number" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label" for="status">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">All statuses</option>
+                        @foreach (var rentalStatus in new[] { "Booked", "Active", "Returned", "Overdue", "Cancelled" })
+                        {
+                            <option value="@rentalStatus" selected="@(selectedStatus == rentalStatus)">@rentalStatus</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+                    <a asp-action="GetAllRentalCholiList" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -27,9 +49,6 @@
                             <th>Phone</th>
                             <th>Rental Start</th>
                             <th>Expected Return</th>
-                            @* <th>Grand Total</th> *@
-                            <th>Paid</th>
-                            <th>Balance</th>
                             <th>Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -39,16 +58,13 @@
                         {
                             foreach (var item in Model)
                             {
-                                <tr>
+                                <tr class="rental-row" role="button" tabindex="0" data-rental-id="@item.RentalId" title="Click to see booked cholis">
                                     <td><strong>#@item.RentalId</strong></td>
                                     @* <td>@item.</td> *@
                                     <td>@item.FirstName @item.LastName</td>
                                     <td>@item.PhoneNumber</td>
                                     <td>@item.RentalStartDate?.ToString("dd-MM-yyyy")</td>
                                     <td>@item.ExpectedReturnDate?.ToString("dd-MM-yyyy")</td>
-                                    @* <td>₹ @item.GrandTotal.ToString("N2")</td> *@
-                                    <td>₹ @item.AmountPaid.ToString("N2")</td>
-                                    <td>₹ @item.BalanceAmount.ToString("N2")</td>
                                     <td>
                                         @if (item.Status == "Booked")
                                         {
@@ -113,3 +129,42 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="rentalItemsModal" tabindex="-1" aria-labelledby="rentalItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" id="rentalItemsModalContent"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const rentalItemsModal = document.getElementById('rentalItemsModal');
+        const rentalItemsModalContent = document.getElementById('rentalItemsModalContent');
+
+        async function showRentalItems(rentalId) {
+            rentalItemsModalContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>';
+            bootstrap.Modal.getOrCreateInstance(rentalItemsModal).show();
+
+            try {
+                const response = await fetch('@Url.Action("RentalItemsModal", "Rental")?id=' + encodeURIComponent(rentalId));
+                if (!response.ok) throw new Error('Unable to load booked cholis.');
+                rentalItemsModalContent.innerHTML = await response.text();
+            } catch (error) {
+                rentalItemsModalContent.innerHTML = '<div class="modal-body text-center text-danger py-5">Unable to load booked cholis.</div>';
+            }
+        }
+
+        document.querySelectorAll('.rental-row').forEach(row => {
+            row.addEventListener('click', event => {
+                if (event.target.closest('a, button, form')) return;
+                showRentalItems(row.dataset.rentalId);
+            });
+            row.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    showRentalItems(row.dataset.rentalId);
+                }
+            });
+        });
+    </script>
+}

@@ -84,23 +84,27 @@ BEGIN
                 RETURN;
             END
 
-            -- Count bookings by Choli. Both selected dates are inclusive and
-            -- cancelled rentals are not counted.
+            -- Return one row for every booked Choli. The UI groups these rows
+            -- by SKU/Choli and displays each booking's customer details.
             SELECT
                 i.item_id AS ItemId,
                 i.sku_code AS SkuCode,
                 i.name AS Name,
-                COUNT(ri.rental_item_id) AS BookingCount
+                CONCAT('BILL-', r.rental_id) AS BillNo,
+                CONCAT(c.first_name, ' ', c.last_name) AS CustomerName,
+                c.phone_number AS MobileNumber
             FROM inventory_items i
             INNER JOIN rental_items ri ON ri.item_id = i.item_id
             INNER JOIN rentals r ON r.rental_id = ri.rental_id
+            INNER JOIN customers c ON c.customer_id = r.customer_id
             WHERE ISNULL(i.is_deleted, 0) = 0
+              AND ISNULL(ri.is_deleted, 0) = 0
+              AND ISNULL(r.is_deleted, 0) = 0
               AND r.status <> 'Cancelled'
               AND r.rental_start_date >= @rental_start_date
               AND r.rental_start_date <= @expected_return_date
               AND (@item_id IS NULL OR i.item_id = @item_id)
-            GROUP BY i.item_id, i.sku_code, i.name
-            ORDER BY BookingCount DESC, i.sku_code;
+            ORDER BY i.sku_code, r.rental_id;
             RETURN;
         END
 
@@ -176,4 +180,4 @@ BEGIN
         SELECT ERROR_MESSAGE() AS Message, 0 AS Status;
     END CATCH
 END
-GO
+Go

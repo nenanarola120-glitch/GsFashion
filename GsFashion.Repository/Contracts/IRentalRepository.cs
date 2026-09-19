@@ -6,7 +6,7 @@ namespace GsFashion.Repository.Contracts
 {
     public interface IRentalRepository
     {
-        Task<IEnumerable<RentalModel>> GetAllAsync();
+        Task<IEnumerable<RentalModel>> GetAllAsync(string? searchingString = null, string? status = null);
 
         Task<RentalModel?> GetByIdAsync(int rentalId);
 

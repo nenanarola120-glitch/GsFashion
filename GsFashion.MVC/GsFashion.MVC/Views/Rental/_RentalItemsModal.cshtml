@@ -1,0 +1,36 @@
+@model GsFashion.Repository.Models.Rental.RentalModel
+
+<div class="modal-header">
+    <div>
+        <h5 class="modal-title" id="rentalItemsModalLabel">Booked Cholis</h5>
+        <small class="text-muted">Bill: @(Model.BillNo ?? $"#{Model.RentalId}") · @Model.CustomerFirstName @Model.CustomerLastName</small>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Customer mobile: @Model.CustomerPhoneNumber</span>
+        <span class="badge bg-primary">@Model.InventoryItemModels.Count() Choli(s)</span>
+    </div>
+    <div class="row g-3">
+        @foreach (var item in Model.InventoryItemModels)
+        {
+            <div class="col-12 col-md-6">
+                <div class="card h-100 border">
+                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name" style="height: 170px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="bg-light text-muted d-flex align-items-center justify-content-center" style="height: 170px;"><i class="bi bi-image fs-2"></i></div>
+                    }
+                    <div class="card-body">
+                        <div class="fw-bold">@item.SkuCode</div>
+                        <div>@item.Name</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
